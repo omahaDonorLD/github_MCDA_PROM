@@ -1,7 +1,11 @@
 
 data are of the form :
 
-1st line : M K N, where M is the number of "experts", K the number of criteria and N the number of actions/alternatives
+1st line : M K N, where M is the number of "experts", K the number of criteria and N the number of actions/alternatives.
+
+2nd line : the thresholds p and q for the preferences sets.
+
+3rd line : the weights of the criteria.
 
 Next lines : For M groups of K+1 lines, the first line gives the weight of the expert and the remaining lines express the score on each criterion.
 
