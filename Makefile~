@@ -28,7 +28,7 @@ AIMS = MCDA
 
 all: $(AIMS)
 
-MCDA: main.o expert.o
+MCDA: expert.o main.o
 	$(C) $(DEBUG) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 #	$(C) $(DEBUG) -o MCDA main.o $(CFLAGS) $(OPTIMIZATION)
 
