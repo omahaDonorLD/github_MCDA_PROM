@@ -28,11 +28,15 @@ AIMS = MCDA
 
 all: $(AIMS)
 
-MCDA: expert.o main.o
+MCDA: main.o print_file.o expert.o
 	$(C) $(DEBUG) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 #	$(C) $(DEBUG) -o MCDA main.o $(CFLAGS) $(OPTIMIZATION)
 
 expert.o : expert.c expert.h
+	$(C) $(DEBUG) -o $@ -c $< $(CFLAGS) $(LDFLAGS)
+#	$(C) $(DEBUG) -o expert.o -c expert.c $(CFLAGS) $(OPTIMIZATION)
+
+print_file.o : print_file.c expert.h main.h
 	$(C) $(DEBUG) -o $@ -c $< $(CFLAGS) $(LDFLAGS)
 #	$(C) $(DEBUG) -o expert.o -c expert.c $(CFLAGS) $(OPTIMIZATION)
 

@@ -7,6 +7,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+/**
+#define PTR_NULL(PTR,LINE,FROM_FILE)	( ( (PTR_NULL) == NULL){
+**/
+/* memory allocation failure (here should be comments ending : *star*slash) */
+/**
+printf("MEMO_ALLOC_FAILURE line %d in file %s\n", (LINE), (FROM_FILE )); })
+**/
+
 
 typedef struct expert_pref
 {
@@ -24,6 +32,7 @@ typedef struct expert
 	float p_l;/* The weight of the expert. */
 	float** e_ij;/* e_ij, size K*N, gives the evaluation (the score) of project j on the criterion i by the current expert. */
 	expert_pref* S_l;/* binary preference relation (size N*N). */
+	int* ranks;/* when S_l computation is done, rank */
 }expert;
 
 
