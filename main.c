@@ -7,10 +7,8 @@
 #include "main.h"
 
 
-/* PROM_I */
-/* #define PARTIAL_PREORDER */
-/* PROM_II */
-#define COMPLETE_PREORDER
+/* To activate PROM_II just uncomment line below. Otherwise PROM I used. */
+/* #define COMPLETE_PREORDER */
 
 /* define if printing out needed */
 #define PRINT_STUFFS
@@ -157,6 +155,11 @@
 				printf("%f\t",S[a][b]);
 			printf("\n");
 		}
+
+		printf("OUT S - IN OUT\n");
+		for(a=0;a<N;a++)
+			printf("%f\t%f\n",S[a][N],S[N][a]);
+		printf("\n");
 
 		printf("End print_aggregated_S_l\n");
 	}
@@ -571,13 +574,15 @@ void PROM_2(expert* E_l, float** PHI)
 
 void rank_single(expert_pref* first, int l)
 {
-	int i=0;
+	int i=0,rank=0;
+	float previous_sln=-1.;/* needed for handling equals ranks */
+	int **buff_scores;
 	expert_pref* current_iterator;
 
 	/* allocate memory for the ranking */
 	/* note : for a more convenient way to use the qsort comparator, buff_scores is
 	 * structured as #lines=N and #columns=2 (index of project, its score) */
-	int **buff_scores=malloc(N*sizeof(int*));
+	buff_scores=malloc(N*sizeof(int*));
 	if(buff_scores == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
 	for(i=0;i<N;i++)
@@ -601,7 +606,17 @@ void rank_single(expert_pref* first, int l)
 	
 	qsort(buff_scores, N, sizeof(int*), qsort_comparator);
 
-	for(i=0;i<N;i++)	RANKS[l][buff_scores[i][0]]=i+1;
+	previous_sln=-1.;
+	rank=0;
+	for(i=0;i<N;i++)
+	{
+		if( buff_scores[i][1] != previous_sln )
+		{
+			previous_sln=buff_scores[i][1];
+			rank++;
+		}
+		RANKS[l][buff_scores[i][0]]=rank;
+	}
 	
 	for(i=0;i<N;i++)
 		free(buff_scores[i]);
@@ -610,7 +625,7 @@ void rank_single(expert_pref* first, int l)
 }
 
 
-void S_project(const data E)
+void get_S_a(const data E)
 {
 	int a=0, l=0;
 	
@@ -626,17 +641,20 @@ void S_project(const data E)
 
 float** aggregate_S_l(const data E)
 {
-	int l=0;
+	int l=0, a=0, b=0;
 	expert_pref* current_iterator;
 	expert_pref* tmp;
+	
+	/* Note : S contains S(a,b) AND S_in(a) (as a supplementary column), S_out(a) (as a supplementary row).
+	 * S[N,N] can stay empty. */
 
 	/* Init binary preference relations */
-	float** S=malloc(N*sizeof(float*));
+	float** S=malloc((N+1)*sizeof(float*));
 	if(S == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
-	for(l=0;l<N;l++)
+	for(l=0;l<N+1;l++)
 	{
-		S[l]=calloc(N,sizeof(float));
+		S[l]=calloc((N+1),sizeof(float));
 		if(S[l] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 	}
 
@@ -655,6 +673,17 @@ float** aggregate_S_l(const data E)
 	}
 
 	current_iterator=NULL;
+
+	/* Get the sum of scores */
+	for(a=0;a<N-1;a++)
+	{
+		for(b=a;b<N;b++)
+		{
+			S[a][N]+=S[a][b];
+			S[N][a]+=S[b][a];
+		}
+	}
+
 	return S;
 }
 
@@ -667,6 +696,10 @@ int main(int argc, char** argv)
 	float*** P_l=NULL;
 	float** PI=NULL;
 	float** PHI=NULL;
+
+#ifndef COMPLETE_PREORDER
+	float** S;
+#endif
 
 	if( argc < 2 ){printf("Please add more parameters\n");};
 
@@ -748,7 +781,7 @@ print_S_l(E[l].S_l);
 
 #ifdef COMPLETE_PREORDER
 	/* PROMETHEE II */
-	S_project(E);/* if the ranking is a complete preorder, the computing can be done based on the rankings. */
+	get_S_a(E);/* if the ranking is a complete preorder, the computing can be done based on the rankings. */
 
 #ifdef PRINT_STUFFS
 printf("complete preorder (PROM II) :\n");
@@ -758,7 +791,7 @@ print_ranks();
 	free_alloc_for_PROM_II();
 #else
 	/* PROMETHEE I */
-	float** S=aggregate_S_l(E);/* deallocating E[l].S_l memory is done while aggregating */
+	S=aggregate_S_l(E);/* deallocating E[l].S_l memory is done while aggregating */
 
 #ifdef PRINT_STUFFS
 printf("aggregated result :\n");

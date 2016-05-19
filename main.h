@@ -110,15 +110,15 @@ void PROM_1(expert* E_l, float** PHI);
 void rank_single(expert_pref* first, int l);
 
 
-/** S_project
+/** get_S_a
  * 
  * doesn't do really much than summing the weighted ranks and store the result on the last column of "RANKS" matrix
  * 
- * @param : nothing
+ * @param : the collected data from all experts, though only need and use their ranks
  * @return : nothing
  * 
 */
-void S_project(const data E);
+void get_S_a(const data E);
 
 
 /** aggregate_S_l
