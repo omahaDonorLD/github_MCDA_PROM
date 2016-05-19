@@ -4,7 +4,7 @@
 
 #include "main.h"
 
-#define PRINT_STUFFS
+//#define PRINT_STUFFS
 
 //#define PARTIAL_PREORDER /* PROM_I */
 #define COMPLETE_PREORDER /* PROM_II */
@@ -284,9 +284,13 @@ float** level_criterion(const float* e_l_i)
 	int a=0,b=0,best=-1,worst=-1,i=0;
 	float d=0.;
 
-	float** P_i=(float**) malloc(N*sizeof(float*));
+	float** P_i=malloc(N*sizeof(*P_i));
 
-	for(a=0;a<N;a++)	P_i[a]=(float*) calloc(N,sizeof(float));
+	for(a=0;a<N;a++){P_i[a]=(float*)malloc((N+1)*sizeof(float*));}
+
+//for(a=0;a<N;a++){printf("%p\n",P_i[a]);}
+
+//printf("\n");
 	
 	bool assigned=false;
 	
@@ -309,7 +313,9 @@ float** level_criterion(const float* e_l_i)
 				/* absolute value since P_i[worst][best] is already assigned the worst value, remains the best wich has always d > 0 */
 				if( fabsf(d) < THRESHOLDS[i] )
 				{
+//					P_i[best][worst]=LEV_CRIT_GRADS[i];
 					*(*(P_i+best)+worst)=*(LEV_CRIT_GRADS+i);
+//					memcpy((*(P_i+best)+worst), (LEV_CRIT_GRADS+i), sizeof(float)+1);
 					assigned=true;
 					continue;
 				}
@@ -319,6 +325,8 @@ float** level_criterion(const float* e_l_i)
 				if( i==3 )
 				{/* End of the threshold array => strict preferrence */
 //					P_i[best][worst]=LEV_CRIT_GRADS[i];
+//					(*(P_i+best))[worst]=LEV_CRIT_GRADS[i];
+//					memcpy((*(P_i+best)+worst), (LEV_CRIT_GRADS+i), sizeof(float)+1);
 					*(*(P_i+best)+worst)=*(LEV_CRIT_GRADS+i);
 					assigned=true;
 				}
@@ -578,7 +586,7 @@ int main(int argc, char** argv)
 print_data(E);/* Since data is of type expert* can send directly the object that is a pointer and won't create copies. */
 #endif
 
-//	for(l=1;l==1;l++)
+//	for(l=0;l<2;l++)
 	for(l=0;l<M;l++)
 	{
 #ifdef PRINT_STUFFS
@@ -621,9 +629,9 @@ print_PHI(PHI);
 		/* dealloc memory for PHI */
 		free_2D_float(PHI);
 
-//#ifdef PRINT_STUFFS
+#ifdef PRINT_STUFFS
 print_S_l(E[l].S_l);
-//#endif
+#endif
 
 #ifdef COMPLETE_PREORDER
 		rank_single(E[l].S_l, l);/* ranks the projects with respect to opinion of l and store the ranking into "RANKS" list. */

@@ -1,11 +1,14 @@
 
+#ifndef EXPERT_C
+#define EXPERT_C
+
 #include "expert.h"
 
 expert_pref* add_S_l(expert_pref* current, unsigned short int new_p, int new_a, int new_b)
 {
 	/* LIFO : Last In First Out */
 	expert_pref* new_S_l;
-	new_S_l=(expert_pref*) calloc(1,sizeof(expert_pref));
+	new_S_l=calloc(1,sizeof(expert_pref));
 /*
 	PTR_NULL(new_S_l,__LINE__,__FILE__);
 */
@@ -18,3 +21,5 @@ expert_pref* add_S_l(expert_pref* current, unsigned short int new_p, int new_a, 
 	
 	return new_S_l;
 }
+
+#endif

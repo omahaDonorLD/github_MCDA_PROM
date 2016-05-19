@@ -7,7 +7,10 @@ CPP = g++
 C = gcc
 
 # Options of compilation
-CFLAGS = -Wall -Wextra -pedantic -ansi 
+CFLAGS = -Wall -Wextra -pedantic -ansi
+
+# use of c99 version
+C99 = -std=c99
 
 # include standard math library
 LDFLAGS += -lm
@@ -28,21 +31,18 @@ AIMS = MCDA
 
 all: $(AIMS)
 
-MCDA: main.o print_file.o expert.o
-	$(C) $(DEBUG) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+MCDA: main.o expert.o
+	$(C) $(C99) $(DEBUG) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o MCDA main.o $(CFLAGS) $(OPTIMIZATION)
 
 expert.o : expert.c expert.h
-	$(C) $(DEBUG) -o $@ -c $< $(CFLAGS) $(LDFLAGS)
+	$(C) $(C99) $(DEBUG) -o $@ -c $< -Wall $(LDFLAGS) 
+#	$(C) $(C99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o expert.o -c expert.c $(CFLAGS) $(OPTIMIZATION)
 
-print_file.o : print_file.c expert.h main.h
-	$(C) $(DEBUG) -o $@ -c $< $(CFLAGS) $(LDFLAGS)
-#	$(C) $(DEBUG) -o expert.o -c expert.c $(CFLAGS) $(OPTIMIZATION)
-
-main.o : main.cpp expert.h main.h
-	$(C) $(DEBUG) -o $@ -c $< $(CFLAGS) $(LDFLAGS)
-#	$(C) $(DEBUG) -o main.o -c main.cpp $(CFLAGS) $(OPTIMIZATION)
+main.o : main.c expert.h main.h
+	$(C) $(C99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
+#	$(C) $(DEBUG) -o main.o -c main.c $(CFLAGS) $(OPTIMIZATION)
 
 clean :
 	rm -rf *.o

@@ -2,10 +2,11 @@
 #ifndef EXPERT_H
 #define EXPERT_H
 
+/* #include <math.h> */
 #include <stdlib.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 /**
 #define PTR_NULL(PTR,LINE,FROM_FILE)	( ( (PTR_NULL) == NULL){
@@ -35,9 +36,7 @@ typedef struct expert
 	int* ranks;/* when S_l computation is done, rank */
 }expert;
 
-
 typedef expert* data;/* "data" is the set of M "opinions" */
-
 
 expert_pref* add_S_l(expert_pref* current, unsigned short int new_p, int new_a, int new_b);
 

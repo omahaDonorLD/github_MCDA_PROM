@@ -2,28 +2,13 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "expert.c"
+#include "expert.h"
 
 /* Values for P(a,b), use of LEVEL CRITERION */
 #define NO_PREF 0.
 #define INDIFF 0.
 #define WEAK_PREF 0.5
 #define PREF 1.
-
-
-int M=0, K=0, N=0;/* Parameters : M "experts", K criteria, N alternatives/actions */
-float q=0., p=0.;/* Thresholds for indifference-weak-strict preferences. */
-
-/* when either PROM I or II is applied and the scores computed for each experts, the rank are assigned */
-/* Note : array of size [M+1][N], M+1 since the last one will contain the "global" result with all the experts : for a in A, RANKS[M+1][a] = sum {l in 1 to M} (rank_{l}(a)) */
-int** RANKS;
-float* COMPLETE_PREORDER_S;
-
-/* Threshold and  the with respect to level criterion shape */
-float* LEV_CRIT_GRADS;
-float* THRESHOLDS;
-
-float* criterion_weights;/* The criterion weights :) */
 
 /*
 	Note  : the PHI array is a 3*N matrix, for which the :
@@ -73,7 +58,7 @@ float** level_criterion(const float* e_l_i);
  * @return : PI, the matrix of preference indices.
  * 
 */
-float** compute_pref_indices(const float*** P_l);
+float** compute_pref_indices(float*** P_l);
 
 
 /** compute_phi
@@ -84,7 +69,7 @@ float** compute_pref_indices(const float*** P_l);
  * @return : PHI, the matrix of flows (0, 1 and 2 respectively the outranking, outranked and net values.).
  * 
 */
-float** compute_phi(float const* const* PI);
+float** compute_phi(float** PI);
 
 
 /** PROM_1
@@ -97,7 +82,7 @@ float** compute_phi(float const* const* PI);
  * @return : S_l, the table of binary (kind of) relations.
  * 
 */
-void PROM_1(expert* E_l, float const* const* PHI);
+void PROM_1(expert* E_l, float** PHI);
 
 
 /** rank_single
@@ -108,7 +93,7 @@ void PROM_1(expert* E_l, float const* const* PHI);
  * @return : nothing
  * 
 */
-void rank_single(struct expert_pref* first, int l);
+void rank_single(expert_pref* first, int l);
 
 
 /** S_project
@@ -131,7 +116,7 @@ void S_project(const data E);
  * @return : S the aggregated S_l
  * 
 */
-float** aggregate_S_l(const data* E);
+float** aggregate_S_l(const data E);
 
 
 /** Dealloc memory **/
