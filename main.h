@@ -17,8 +17,22 @@
 		- 3rd ( [2][i] | i in 1,..,N ) contains the net flow of i.
 */
 
+int M=0, K=0, N=0;/* Parameters : M "experts", K criteria, N alternatives/actions */
+float q=0., p=0.;/* Thresholds for indifference-weak-strict preferences. */
 
-/** comparator
+/* when either PROM I or II is applied and the scores computed for each experts, the rank are assigned */
+/* Note : array of size [M+1][N], M+1 since the last one will contain the "global" result with all the experts : for a in A, RANKS[M+1][a] = sum {l in 1 to M} (rank_{l}(a)) */
+int** RANKS;
+float* COMPLETE_PREORDER_S;
+
+/* Threshold and  the with respect to level criterion shape */
+float* LEV_CRIT_GRADS;
+float* THRESHOLDS;
+
+float* criterion_weights;/* The criterion weights :) */
+
+
+/** qsort_comparator
  * 
  * used to give the sorting criteria for the ranking of projects :
  * 		"score" is a 2D list, where the first dimension contains the integers 1 to N that gives the index of 
@@ -27,7 +41,7 @@
  * @return : true/false (short way to present it.)
  * 
 */
-int comparator(const void* score_1, const void* score_2);
+int qsort_comparator(const void* pa, const void* pb);
 
 
 /** read_data
