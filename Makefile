@@ -6,6 +6,11 @@
 CPP = g++
 C = gcc
 
+# Directories
+SOURCES = srcs
+HEADERS = heads
+OBJECTS = objs
+
 # Options of compilation
 CFLAGS = -Wall -Wextra -pedantic -ansi
 
@@ -23,31 +28,31 @@ DEBUG = -g
 INCLUDE = -I .
 
 # Finals executables
-AIMS = MCDA
+AIM = MCDA
 
 ################################################################
 #                  COMMANDS OF COMPILATION                     #
 ################################################################
 
-all: $(AIMS)
+all: $(AIM)
 
-MCDA: main.o expert.o
+MCDA: $(OBJECTS)/main.o $(OBJECTS)/expert.o
 	$(C) $(C99) $(DEBUG) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o MCDA main.o $(CFLAGS) $(OPTIMIZATION)
 
-expert.o : expert.c expert.h
+$(OBJECTS)/expert.o : $(SOURCES)/expert.c $(HEADERS)/expert.h
 	$(C) $(C99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o expert.o -c expert.c $(CFLAGS) $(OPTIMIZATION)
 
-main.o : main.c expert.h main.h
+$(OBJECTS)/main.o : $(SOURCES)/main.c $(HEADERS)/expert.h $(HEADERS)/main.h
 	$(C) $(C99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o main.o -c main.c $(CFLAGS) $(OPTIMIZATION)
 
 clean :
-	rm -rf *.o
+	rm -rf $(OBJECTS)/*.o
 
 mrproper: clean
-	rm -rf $(AIMS)
+	rm -rf $(AIM)
 	
 blank:
 	tput clear

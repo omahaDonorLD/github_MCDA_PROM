@@ -4,7 +4,7 @@
 #ifndef MAIN_C
 #define MAIN_C
 
-#include "main.h"
+#include "../main.h"
 
 
 /* To activate PROM_II just uncomment line below. Otherwise PROM I used. */

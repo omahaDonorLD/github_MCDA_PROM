@@ -2,7 +2,7 @@
 #ifndef EXPERT_C
 #define EXPERT_C
 
-#include "expert.h"
+#include "../heads/expert.h"
 
 expert_pref* add_S_l(expert_pref* current, unsigned short int new_p, int new_a, int new_b)
 {
