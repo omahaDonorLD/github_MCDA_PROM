@@ -6,16 +6,16 @@
 
 #include "../heads/main.h"
 
-
-/* To activate PROM_II just uncomment line below. Otherwise PROM I used. */
+/* Uncomment the line below to use PROM_II. Otherwise PROM I is the default PROMETHEE used. */
 /* #define COMPLETE_PREORDER */
 
-/* define if printing out needed */
+/* display the results */
 #define PRINT_STUFFS
 
 /* =========================================================== */
 /* Portion of code to use only if one wants to display results */
 /* =========================================================== */
+#ifdef PRINT_STUFFS
 
 	void print_data(const data E)
 	{
@@ -23,14 +23,13 @@
 
 		printf("In print_data\n");
 
-		printf("M:%d, K:%d (respective weights:",M,K);
+		printf("M:%d, N:%d, K:%d (weight,-q,q,p:",M,N,K);
 
 		for(i=0;i<K;i++)
 		{
-			printf("%f,",criterion_weights[i]);
+			printf("\tcriterion %d : %f, %f, %f, %f\n", i+1,criterion_weights[i], THRESHOLDS[i][0], THRESHOLDS[i][1], THRESHOLDS[i][2]);
 		}
-
-		printf("), N:%d, q:%f, p:%f\n",N,q,p);
+		printf(")\n");
 
 		for(l=0;l<M;l++)
 		{
@@ -156,7 +155,7 @@
 			printf("\n");
 		}
 
-		printf("OUT S - IN OUT\n");
+		printf("S+ | S-\n");
 		for(a=0;a<N;a++)
 			printf("%f\t%f\n",S[a][N],S[N][a]);
 		printf("\n");
@@ -164,6 +163,7 @@
 		printf("End print_aggregated_S_l\n");
 	}
 
+#endif
 /*==================== End of printing stuffs ========================*/
 
 
@@ -185,13 +185,17 @@ data read_data(char** argv)
 
 	if( fscanf(fp,"%d %d %d", &M, &K, &N) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
 
-	if( fscanf(fp,"%f %f", &q, &p) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
-	
 	/* assign values for thresholds and grades of level criteria */
-	THRESHOLDS=malloc(3*sizeof(float));
+	THRESHOLDS=malloc(K*sizeof(float*));
 	if(THRESHOLDS == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
-	THRESHOLDS[0]=-q; THRESHOLDS[1]=q; THRESHOLDS[2]=p;
+	for(i=0;i<K;i++)
+	{/* get the thresholds for each criterion */
+		THRESHOLDS[i]=calloc(3,sizeof(float));/* -q, q and p for each criteria */
+		if(THRESHOLDS[i] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+		if( fscanf(fp,"%f %f", &THRESHOLDS[i][1], &THRESHOLDS[i][2]) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
+		THRESHOLDS[i][0]= -(THRESHOLDS[i][1]);
+	}
 
 	LEV_CRIT_GRADS=malloc(4*sizeof(float));
 	if(LEV_CRIT_GRADS == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
@@ -202,7 +206,6 @@ data read_data(char** argv)
 	if(E == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
 #ifdef COMPLETE_PREORDER
-
 	/* allocate memory for the ranking and "S" when complete preorder PROM II is used */
 	RANKS=malloc(M*sizeof(int*));
 	if(RANKS == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
@@ -215,7 +218,6 @@ data read_data(char** argv)
 		RANKS[i]=calloc(N,sizeof(int));
 		if(RANKS[i] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 	}
-
 #endif
 
 	/* alloc memory for each expert */
@@ -273,7 +275,7 @@ data read_data(char** argv)
 }
 
 
-void free_2D_float(float** two_d_float)
+void free_square_n_float(float** two_d_float)
 {
 	int i=0;
 
@@ -310,6 +312,15 @@ void free_remaining_data(data E)
 	/* free memory allocated for the criterion weights */
 	free(criterion_weights);
 	criterion_weights=NULL;
+
+	/* free memory allocated for the thresholds */
+	for(j=0;j<K;j++)
+	{
+		free(THRESHOLDS[j]);
+		THRESHOLDS[j]=NULL;
+	}
+	free(THRESHOLDS);
+	THRESHOLDS=NULL;
 }
 
 
@@ -343,7 +354,7 @@ void free_S(float** S)
 }
 
 
-float** level_criterion(const float* e_l_i)
+float** level_criterion(const float* e_l_i, int j)
 {
 	int a=0,b=0,best=-1,worst=-1,i=0;
 	float d=0., buff=0.;
@@ -377,7 +388,7 @@ float** level_criterion(const float* e_l_i)
 
 			while(!assigned)
 			{
-				if( buff < THRESHOLDS[i] )
+				if( buff < THRESHOLDS[j][i] )
 				{
 					P_i[best][worst]=LEV_CRIT_GRADS[i];
 					assigned=true;
@@ -677,11 +688,20 @@ float** aggregate_S_l(const data E)
 	/* Get the sum of scores */
 	for(a=0;a<N-1;a++)
 	{
-		for(b=a;b<N;b++)
+		for(b=a+1;b<N;b++)
 		{
 			S[a][N]+=S[a][b];
 			S[N][a]+=S[b][a];
+
+			S[b][N]+=S[b][a];
+			S[N][b]+=S[a][b];
 		}
+	}
+
+	for(a=0;a<N;a++)
+	{
+		S[a][N]+=S[a][a];
+		S[N][a]+=S[a][a];
 	}
 
 	return S;
@@ -722,7 +742,7 @@ printf("Expert %d\n",l);
 
 		for(i=0;i<K;i++)
 		{/* computes P_1_l,..., P_K_l and gathers them into P_l */
-			P_l[i]=level_criterion(E[l].e_ij[i]);
+			P_l[i]=level_criterion(E[l].e_ij[i], i);
 		}
 
 #ifdef PRINT_STUFFS
@@ -737,7 +757,7 @@ print_P_l(P_l[i]);
 		/* dealloc memory provided for P_l[i] */
 		for(i=0;i<K;i++)
 		{
-			free_2D_float(P_l[i]);
+			free_square_n_float(P_l[i]);
 		}
 
 		/* dealloc memory allocated to P_l, caution it has to be deallocated after deallocating all P_l[i] */
@@ -751,7 +771,7 @@ print_PI(PI);
 #endif
 
 		/* dealloc memory for PI */
-		free_2D_float(PI);
+		free_square_n_float(PI);
 		PI=NULL;
 
 		/* applying PROMETHEE */
@@ -766,7 +786,7 @@ print_PHI(PHI);
 #endif
 
 		/* dealloc PHI */
-		free_2D_float(PHI);
+		free_square_n_float(PHI);
 		PHI=NULL;
 
 #ifdef PRINT_STUFFS

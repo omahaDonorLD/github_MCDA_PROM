@@ -10,24 +10,23 @@
 #define WEAK_PREF 0.5
 #define PREF 1.
 
-/*
-	Note  : the PHI array is a 3*N matrix, for which the :
-		- first line ( [0][i] | i in 1,..,N ) contains the outranking flow of i,
-		- 2nd ( [1][i] | i in 1,..,N ) contains the outranked flow of i,
-		- 3rd ( [2][i] | i in 1,..,N ) contains the net flow of i.
+/* Note  : the "PHI" array (the matrix of flows) is a 3*N matrix, for which the :
+ *  - first line ( [0][i] | i in 1,..,N ) contains the outranking flow of i,
+ *  - 2nd ( [1][i] | i in 1,..,N ) contains the outranked flow of i,
+ *  - 3rd ( [2][i] | i in 1,..,N ) contains the net flow of i.
 */
 
 int M=0, K=0, N=0;/* Parameters : M "experts", K criteria, N alternatives/actions */
-float q=0., p=0.;/* Thresholds for indifference-weak-strict preferences. */
 
-/* when either PROM I or II is applied and the scores computed for each experts, the rank are assigned */
-/* Note : array of size [M+1][N], M+1 since the last one will contain the "global" result with all the experts : for a in A, RANKS[M+1][a] = sum {l in 1 to M} (rank_{l}(a)) */
+/* Note : array of size [M+1][N]. The (M+1)th list contains the "global" result with all the experts :
+ * for a in A, RANKS[M+1][a] = sum {l in 1 to M} (rank_{l}(a))
+*/
 int** RANKS;
 float* COMPLETE_PREORDER_S;
 
-/* Threshold and  the with respect to level criterion shape */
+/* Threshold and the with respect to level criterion shape */
 float* LEV_CRIT_GRADS;
-float* THRESHOLDS;
+float** THRESHOLDS;
 
 float* criterion_weights;/* The criterion weights :) */
 
@@ -57,11 +56,11 @@ data read_data(char** argv);
 
 /** level_criterion
  * 
- * @param : e_l_i or e_i[j]_l, the 1D array of N evaluations made by the expert l.
+ * @param : e_l_i the list of N evaluations made by the expert l, and j the criterion currently evaluated.
  * @return : P_k_l, of value 0/0.5/1 as defined by the level criterion shape.
  * 
 */
-float** level_criterion(const float* e_l_i);
+float** level_criterion(const float* e_l_i, int j);
 
 
 /** compute_pref_indices
