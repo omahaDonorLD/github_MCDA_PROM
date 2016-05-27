@@ -3,7 +3,7 @@ I) The application is much easier to use for unix users with the Make tool avail
 	- To run the application, a numerical instance of a MCDA problem is required as parameter (some instances are stored into the directory ./data/ ).
 		eg : ./MCDA	data/data1
 
-For windows users one solution is to rebuild completely from the sources or use the mingw (http://www.mingw.org/) tool that provides all the necessary tools.
+For windows users one solution is to rebuild completely from the sources or use the mingw (http://www.mingw.org/) tool that provides all the necessary 
 			
 II)
   The format of the numerical instance is as follows :
