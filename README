@@ -1,4 +1,4 @@
-I) The application is much easier to use for unix users with the Make tool : the whole building process is performed by the Makefile and provides a complete, ready to use executable (the gcc compiler is also required) :
+I) The application is much more easier to use for unix users with the Make tool : the whole building process is performed by the Makefile and provides a complete, ready to use executable (the gcc compiler is also required) :
 	- The "Make" command produces the executable "MCDA"
 	- To run the application, a numerical instance of a MCDA problem is required as parameter (some instances are stored into the directory ./data/ ).
 		eg : ./MCDA ./data/data1 , to apply PROMETHEE on the numerical instance given by data1 file into the directory data/
