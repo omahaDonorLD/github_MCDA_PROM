@@ -50,8 +50,8 @@ III) The provided outputs are :
 		-- the binary preference relations :
 			** X elements of the format (a,b,c), where a and b are the projects and c is the value of the binary relation :
 				=> 3 for the preference relation : (a,b,3) a is preferred to b
-				=> 2 for the preference relation : (a,b,2) a and b are indifferent ((b,a,2) should be too into the preference relation set.)
-				=> 1 for the preference relation : (a,b,1) a and b are incomparable ((b,a,1) should be too into the preference relation set.)
+				=> 2 for the indifference relation : (a,b,2) a and b are indifferent ((b,a,2) should be too into the preference relation set.)
+				=> 1 for the incomparability relation : (a,b,1) a and b are incomparable ((b,a,1) should be too into the preference relation set.)
 	- In case of a :
 		-- Partial preorder (PROMETHEE I) : the weighted aggregation of the overall binary preference relations.
 		-- Complete preorder (PROMETHEE II) : The complete ranking for each expert and the sum of ranks over all the experts (the ranking over all the experts can then be done by a ranking from the lowest sum value to the highest.)
