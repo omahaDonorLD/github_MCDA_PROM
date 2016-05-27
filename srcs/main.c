@@ -7,7 +7,7 @@
 #include "../heads/main.h"
 
 /* Uncomment the line below to use PROM_II. Otherwise PROM I is the default PROMETHEE used. */
-#define COMPLETE_PREORDER
+/* #define COMPLETE_PREORDER */
 
 /* display the results */
 #define PRINT_STUFFS
