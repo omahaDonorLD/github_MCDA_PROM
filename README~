@@ -1,12 +1,11 @@
-I) The application is much easier to use for unix users with the Make tool available : the whole building process is performed by the Makefile and provides a complete ready to use executable (the gcc compiler is also required) :
+I) The application is much easier to use for unix users with the Make tool : the whole building process is performed by the Makefile and provides a complete ready to use executable (the gcc compiler is also required) :
 	- The "Make" command produces the executable "MCDA"
 	- To run the application, a numerical instance of a MCDA problem is required as parameter (some instances are stored into the directory ./data/ ).
 		eg : ./MCDA	data/data1
 
-For windows users one solution is to rebuild completely from the sources or use the mingw (http://www.mingw.org/) tool that provides all the necessary 
+For windows users one solution is to rebuild completely from the sources or use the mingw (http://www.mingw.org/) tool that provides all the necessary tools.
 			
-II)
-  The format of the numerical instance is as follows :
+II) The format of the numerical instance is as follows :
 
 _ 1st line : M K N, where M is the number of "experts", K the number of criteria and N the number of actions/alternatives.
 
@@ -41,7 +40,7 @@ eg. :
 	on 2nd criteria :	5	|	6	|	7
 (Next 2+1 lines) same for the 2nd expert.
 
-III) The format of the outputs is as follows :
+III) The provided outputs are :
 	- For each expert and
 		-- for each criterion, the preference function (level criterion)
 		-- the multicriteria preference indices,
