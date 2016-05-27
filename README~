@@ -1,6 +1,10 @@
-I) We have tried our best to provide concise comments onto the sources 
-
-II) The format of the input data is as follows :
+I) The application is relatively easy to use and much easier for unix users with the Make tool available : the building process is performed by the Makefile and provides a ready for use executable. However the gcc compiler is required.
+	- The "Make" command produces the executable "MCDA"
+	- To run the application, a numerical instance of a MCDA problem is required as parameter (some instances are stored into the directory ./data/ ).
+		eg : ./MCDA	data/data1
+			
+II)
+  The format of the numerical instance is as follows :
 
 _ 1st line : M K N, where M is the number of "experts", K the number of criteria and N the number of actions/alternatives.
 
@@ -34,3 +38,21 @@ eg. :
 	on 1st criteria : 	4	|	5	|	5
 	on 2nd criteria :	5	|	6	|	7
 (Next 2+1 lines) same for the 2nd expert.
+
+III) The format of the outputs is as follows :
+	- For each expert and
+		-- for each criterion, the preference function (level criterion)
+		-- the multicriteria preference indices,
+		-- the flows,
+		-- the binary preference relations :
+			** N elements of the format (a,b,c), where a and b are the projetcs and c is the value of the binary relation :
+				=> 3 for the preference relation : (a,b,3) a is preferred to b
+				=> 2 for the preference relation : (a,b,2) a and b are indifferent ((b,a,2) should be too into the preference relation set.)
+				=> 1 for the preference relation : (a,b,1) a and b are incomparable ((b,a,1) should be too into the preference relation set.)
+		-- In case of a :
+			--- Complete preorder (PROMETHEE II) : The complete ranking for each expert and the sum of ranks (the ranking over all the experts can then be done by a ranking from the lowest sum value to the highest.)
+
+
+IV) We have tried to provide concise comments in the sources, directory ./srcs/ and ./heads/ .
+
+

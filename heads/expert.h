@@ -34,3 +34,4 @@ typedef expert* data;/* "data" is the list of M "opinions" */
 expert_pref* add_S_l(expert_pref* current, unsigned short int new_p, int new_a, int new_b);
 
 #endif
+

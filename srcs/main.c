@@ -7,7 +7,7 @@
 #include "../heads/main.h"
 
 /* Uncomment the line below to use PROM_II. Otherwise PROM I is the default PROMETHEE used. */
-/* #define COMPLETE_PREORDER */
+#define COMPLETE_PREORDER
 
 /* display the results */
 #define PRINT_STUFFS
@@ -21,7 +21,7 @@
 	{
 		int l=0, i=0, j=0;
 
-		printf("In print_data\n");
+		printf("The data:\n");
 
 		printf("M:%d, N:%d, K:%d (weight,-q,q,p:",M,N,K);
 
@@ -50,7 +50,7 @@
 	{
 		int a=0,b=0;
 
-		printf("In print_P_l\n");
+		printf("The unicriterion preference function\n");
 
 		for(a=0;a<N;a++)
 		{
@@ -70,7 +70,7 @@
 	{
 		int a=0,b=0;
 
-		printf("In print_PI\n");
+		printf("The multicriteria preference indices\n");
 
 		for(a=0;a<N;a++)
 		{
@@ -90,9 +90,9 @@
 	{
 		int a=0;
 
-		printf("In print_PHI\n");
+		printf("The flows\n");
 
-		printf("a|\tphi_plus\t|\tphi_minus\t|\tnet\n");
+		printf("a|\toutranking flows\t|\toutranked flows\t|\tnet flows\n");
 		printf("=====================================================================\n");
 
 		for(a=0;a<N;a++)
@@ -107,7 +107,7 @@
 	{
 		expert_pref* current_iterator=first;
 
-		printf("In print_S_l\n");
+		printf("The binary preference relations\n");
 
 		while(current_iterator!=NULL)
 		{
@@ -123,7 +123,7 @@
 	{
 		int a=0,l=0;
 
-		printf("In print_ranks\n");
+		printf("The ranking (complete preorder/PROMETHEE II)\n");
 
 		for(l=0;l<M;l++)
 		{
@@ -146,7 +146,7 @@
 	{
 		int a=0,b=0;
 
-		printf("In print_aggregated_S_l\n");
+		printf("The aggregated binary preference relations (partial preorder/PROMETHEE I)\n");
 
 		for(a=0;a<N;a++)
 		{
@@ -814,12 +814,11 @@ print_ranks();
 	S=aggregate_S_l(E);/* deallocating E[l].S_l memory is done while aggregating */
 
 #ifdef PRINT_STUFFS
-printf("aggregated result :\n");
 print_aggregated_S_l(S);
 #endif
 
 	free_S(S);
-#endif /* ends the first #ifdef */
+#endif /* ends the first #ifdef PRINT_STUFFS */
 
 	/* free_remaining_data ;P */
 	free_remaining_data(E);
@@ -828,3 +827,4 @@ print_aggregated_S_l(S);
 }
 
 #endif
+
