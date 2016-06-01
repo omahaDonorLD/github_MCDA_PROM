@@ -31,8 +31,8 @@ eg. :
 4 6 7
 
 (1st line) This instance illustrates a 2-criteria (2nd value) Problem where 3 projects (3rd value) are evaluated by 2 experts (1st value).
-(2nd line) The 1st criterion has the indifference and preference thresholds values of respectively 1 and 2.
-(3rd line) The 2nd criterion has the threshold values of 2 and 3.
+(2nd line) The 1st criterion has indifference and preference threshold values of respectively 1 and 2.
+(3rd line) The 2nd criterion has threshold values of 2 and 3.
 (4th line) The weights of the criteria : 1 1 1 (all equals).
 (5th line) The 1st expert has a weight of 3
 (6th and 7th line) the 3 projects (a, b, c) are evaluated by the first expert as follows :
