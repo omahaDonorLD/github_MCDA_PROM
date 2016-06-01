@@ -1,6 +1,6 @@
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef PROM_H
+#define PROM_H
 
 #include "expert.h"
 
@@ -41,17 +41,6 @@ float* criterion_weights;/* The criterion weights :) */
  * 
 */
 int qsort_comparator(const void* pa, const void* pb);
-
-
-/** read_data
- * 	
- * Read instances given as arguments and return the right form to be used by the application.
- * 
- * @param : the text file (see ./data/README for more.) depicting the data for the instance.
- * @return : a usable form of data for PROMETHEE : a vector of matrices of size M. Each matrix is of size (K,N) and represents the preference values given by the current expert l in 1..M to the project i in 1..N on the criteria i in 1..K. Such matrix is denoted E_l, and the vector of all such matrices is denoted E.
- *
-*/
-data read_data(char** argv);
 
 
 /** level_criterion
@@ -134,7 +123,7 @@ float** aggregate_S_l(const data E);
 
 /** Dealloc memory **/
 
-/** P_i, PI, and PHI are all 2D float, thus one can use the same method to free them **/
+/** P_i, PI, and PHI are all 2D float of size N*N, hence one can use the same method to free them **/
 void free_2D_float(float** two_d_float);
 
 /** Free data **/
