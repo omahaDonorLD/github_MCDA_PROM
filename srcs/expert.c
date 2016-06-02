@@ -8,7 +8,7 @@ expert_pref* add_S_l(expert_pref* current, unsigned short int new_p, int new_a, 
 {
 	/* LIFO : Last In First Out */
 	expert_pref* new_S_l;
-	new_S_l=calloc(1,sizeof(expert_pref));
+	new_S_l=malloc(sizeof(expert_pref));
 
 	if(new_S_l == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
@@ -16,7 +16,7 @@ expert_pref* add_S_l(expert_pref* current, unsigned short int new_p, int new_a, 
 	new_S_l->a=new_a;
 	new_S_l->b=new_b;
 	new_S_l->NEXT_S_l=current;
-	
+
 	return new_S_l;
 }
 

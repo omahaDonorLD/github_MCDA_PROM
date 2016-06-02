@@ -57,6 +57,10 @@ III) The provided outputs are :
 		-- Complete preorder (PROMETHEE II) : The complete ranking for each expert and the sum of ranks over all the experts (the ranking over all the experts can then be done by a ranking from the lowest sum value to the highest.)
 
 
-IV) We have tried to provide concise comments in the sources, directory ./srcs/ and ./heads/ .
+IV) In case of sorting, one must add the auxiliary file containing the reference profiles. It is of the following format :
+
+(1st line) the number of categories. The number of criteria are supposed the same as specified in the numerical instance
+		
+V) We have tried to provide concise comments in the sources, directory ./srcs/ and ./heads/ .
 
 

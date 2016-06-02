@@ -7,7 +7,8 @@
 #include <stdbool.h>
 #include <string.h>
 
-/* A linked list denoting the binary preference set of an expert. */
+/** A linked list denoting the binary preference set of an expert.
+*/
 typedef struct expert_pref
 {
 	int a;/* a and b belongs to A */
@@ -18,7 +19,8 @@ typedef struct expert_pref
 }expert_pref;
 
 
-/* The structure "expert" : */
+/** The structure "expert" :
+*/
 typedef struct expert
 {
 	float p_l;/* The weight of the expert. */
@@ -30,7 +32,8 @@ typedef struct expert
 
 typedef expert* data;/* "data" is the list of M "opinions" */
 
-/* adds a new preference relation to the S_l linked list. */
+/** adds a new preference relation to the S_l linked list.
+*/
 expert_pref* add_S_l(expert_pref* current, unsigned short int new_p, int new_a, int new_b);
 
 #endif

@@ -6,9 +6,8 @@
 
 #include "../heads/promethee.h"
 
-
 /* display the results */
-#define PRINT_STUFFS
+/* #define PRINT_STUFFS */
 
 /* =========================================================== */
 /* Portion of code to use only if one wants to display results */
@@ -168,11 +167,11 @@
 
 int qsort_comparator(const void* pa, const void* pb)
 {
-	return -( (*(const int **)pa)[1] - (*(const int **)pb)[1] ) ;	
+	return -( (*(const int **)pa)[1] - (*(const int **)pb)[1] ) ;
 }
 
 
-void free_square_n_float(float** two_d_float)
+void free_float_n_square_matrix(float** two_d_float)
 {
 	int i=0;
 
@@ -268,7 +267,7 @@ float** level_criterion(const float* e_l_i, int j)
 	}
 
 	assigned=false;
-	
+
 	for(a=0;a<N-1;a++)
 	{
 		for(b=a+1;b<N;b++)
@@ -350,7 +349,7 @@ float** compute_pref_indices(float*** P_l)
 float** compute_phi(float** PI)
 {
 	int a=0, b=0;
-	
+
 	float** PHI=malloc(N*sizeof(float*));
 	if(PHI == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
@@ -446,7 +445,7 @@ void PROM_2(expert* E_l, float** PHI)
 		Note : this step can't be done on the next loop since on the latter "a" goes from 1 to N-1. And in the both case Cxity is still O(n+n*n) */
 		E_l->S_l=add_S_l(E_l->S_l, 2, a, a);
 	}
-	
+
 	/* b=a+1 helps saving time by skipping performing an O(N^2) loop */
 	for(a=0;a<N-1;a++)
 	{
@@ -511,7 +510,7 @@ void rank_single(expert_pref* first, int l)
 	}
 
 	current_iterator=NULL;
-	
+
 	qsort(buff_scores, N, sizeof(int*), qsort_comparator);
 
 	previous_sln=-1.;
@@ -525,7 +524,7 @@ void rank_single(expert_pref* first, int l)
 		}
 		RANKS[l][buff_scores[i][0]]=rank;
 	}
-	
+
 	for(i=0;i<N;i++)
 		free(buff_scores[i]);
 
@@ -536,7 +535,7 @@ void rank_single(expert_pref* first, int l)
 void get_S_a(const data E)
 {
 	int a=0, l=0;
-	
+
 	for(l=0;l<M;l++)
 	{
 		for(a=0;a<N;a++)
@@ -552,7 +551,7 @@ float** aggregate_S_l(const data E)
 	int l=0, a=0, b=0;
 	expert_pref* current_iterator;
 	expert_pref* tmp;
-	
+
 	/* Note : S contains S(a,b) AND S_in(a) (as a supplementary column), S_out(a) (as a supplementary row).
 	 * S[N,N] can stay empty. */
 
@@ -602,125 +601,6 @@ float** aggregate_S_l(const data E)
 	}
 
 	return S;
-}
-
-
-int main(int argc, char** argv)
-{
-	data E;
-	int l=0, i=0;
-
-	float*** P_l=NULL;
-	float** PI=NULL;
-	float** PHI=NULL;
-
-#ifndef COMPLETE_PREORDER
-	float** S;
-#endif
-
-	if( argc < 2 ){printf("Please add more parameters\n");};
-
-	E=read_data(argv);
-
-#ifdef PRINT_STUFFS
-print_data(E);/* Since data is of type "expert*" one can send directly the object that is a pointer, no copies will be created. */
-#endif
-
-	for(l=0;l<M;l++)
-	{
-
-#ifdef PRINT_STUFFS
-printf("Expert %d\n",l);
-#endif		
-
-		P_l=malloc(K*sizeof(float**));
-		if(P_l == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
-
-
-		for(i=0;i<K;i++)
-		{/* computes P_1_l,..., P_K_l and gathers them into P_l */
-			P_l[i]=level_criterion(E[l].e_ij[i], i);
-		}
-
-#ifdef PRINT_STUFFS
-for(i=0;i<K;i++)
-print_P_l(P_l[i]);
-#endif
-
-		/* Reminder : PI(a,b) = [ ( sum{j in 1 to K}(w[j]*P[j](a,b)) )/( sum{i in 1 to K} (w[j]) ) ] and is of size n*n.
-			PI(a,b) ~ P_j(a,b) considering simultaneously all the criteria */
-		PI=compute_pref_indices(P_l);
-
-		/* dealloc memory provided for P_l[i] */
-		for(i=0;i<K;i++)
-		{
-			free_square_n_float(P_l[i]);
-		}
-
-		/* dealloc memory allocated to P_l, caution it has to be deallocated after deallocating all P_l[i] */
-		free(P_l);
-		P_l=NULL;
-
-		PHI=compute_phi(PI);
-
-#ifdef PRINT_STUFFS
-print_PI(PI);
-#endif
-
-		/* dealloc memory for PI */
-		free_square_n_float(PI);
-		PI=NULL;
-
-		/* applying PROMETHEE */
-#ifdef COMPLETE_PREORDER
-		PROM_2((E+l), PHI);
-#else
-		PROM_1((E+l), PHI);
-#endif
-
-#ifdef PRINT_STUFFS
-print_PHI(PHI);
-#endif
-
-		/* dealloc PHI */
-		free_square_n_float(PHI);
-		PHI=NULL;
-
-#ifdef PRINT_STUFFS
-print_S_l(E[l].S_l);
-#endif
-
-#ifdef COMPLETE_PREORDER
-		rank_single(E[l].S_l, l);/* ranks the projects with respect to opinion of l and store the ranking into "RANKS" list. */
-#endif
-
-	}
-
-#ifdef COMPLETE_PREORDER
-	/* PROMETHEE II */
-	get_S_a(E);/* if the ranking is a complete preorder, the computing can be done based on the rankings. */
-
-#ifdef PRINT_STUFFS
-printf("complete preorder (PROM II) :\n");
-print_ranks();
-#endif
-
-	free_alloc_for_PROM_II();
-#else
-	/* PROMETHEE I */
-	S=aggregate_S_l(E);/* deallocating E[l].S_l memory is done while aggregating */
-
-#ifdef PRINT_STUFFS
-print_aggregated_S_l(S);
-#endif
-
-	free_S(S);
-#endif /* ends the first #ifdef PRINT_STUFFS */
-
-	/* free_remaining_data ;P */
-	free_remaining_data(E);
-
-	return EXIT_SUCCESS;
 }
 
 #endif

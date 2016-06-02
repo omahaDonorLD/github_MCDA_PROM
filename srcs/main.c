@@ -3,22 +3,22 @@
 #ifndef MAIN_C
 #define MAIN_C
 
-#include "../heads/promethee.h"
+#include "../heads/flowsort.h"
 
 /* Uncomment the line below to use PROM_II. Otherwise PROM I is the default PROMETHEE used. */
 /* #define COMPLETE_PREORDER */
 
 
 /** read_data
- * 	
+ *
  * Read instances given as arguments and return the right form to be used by the application.
- * 
+ *
  * @param : the text file (see ./data/README for more.) depicting the data for the instance.
  * @return : a usable form of data for PROMETHEE : a vector of matrices of size M. Each matrix is of size (K,N) and represents the preference values given by the current expert l in 1..M to the project i in 1..N on the criteria i in 1..K. Such matrix is denoted E_l, and the vector of all such matrices is denoted E.
  *
 */
 data read_data(char** argv)
-{	
+{
 	int i=0,j=0,k=0;
 	float buff=0;
 	data E;
@@ -79,7 +79,7 @@ data read_data(char** argv)
 			E[i].e_ij[j]=calloc(N,sizeof(float));
 			if(E[i].e_ij[j] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 		}
-	}	
+	}
 
 	/* alloc memory for the criterion weights */
 	criterion_weights=calloc(K,sizeof(float));
@@ -118,6 +118,40 @@ data read_data(char** argv)
 }
 
 
+/** read_sorting_data
+ *
+ * Read the reference profiles
+ *
+ * @param : the text file (see ./data/README for more.) depicting the data for the instance.
+ * @return : a usable form of data for PROMETHEE : a vector of matrices of size M. Each matrix is of size (K,N) and represents the preference values given by the current expert l in 1..M to the project i in 1..N on the criteria i in 1..K. Such matrix is denoted E_l, and the vector of all such matrices is denoted E.
+ *
+*/
+void read_sorting_data(char** argv)
+{
+
+	int i=0,j=0;
+	FILE* fp;
+
+	fp=fopen(argv[2],"r");
+
+	if( fscanf(fp,"%d", &N_CAT) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
+
+	/* assign values for the reference profiles */
+	R=malloc(N_CAT*sizeof(float*));
+	C=malloc(N_CAT*sizeof(categorie));
+
+    for(i=0; i<N_CAT; i++)
+    {
+        C[i].alternative=-1;/* alternative < 0 denotes an empty category */
+        R[i]=calloc(K,sizeof(float));
+    }
+
+    for(i=0; i<N_CAT; i++)
+        for(j=0; j<K; j++)  if( fscanf(fp,"%f", &R[i][j]) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
+
+	fclose(fp);
+}
+
 
 int main(int argc, char** argv)
 {
@@ -145,7 +179,7 @@ print_data(E);/* Since data is of type "expert*" one can send directly the objec
 
 #ifdef PRINT_STUFFS
 printf("Expert %d\n",l);
-#endif		
+#endif
 
 		P_l=malloc(K*sizeof(float**));
 		if(P_l == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
@@ -168,7 +202,7 @@ print_P_l(P_l[i]);
 		/* dealloc memory provided for P_l[i] */
 		for(i=0;i<K;i++)
 		{
-			free_square_n_float(P_l[i]);
+            free_float_n_square_matrix(P_l[i]);
 		}
 
 		/* dealloc memory allocated to P_l, caution it has to be deallocated after deallocating all P_l[i] */
@@ -182,7 +216,7 @@ print_PI(PI);
 #endif
 
 		/* dealloc memory for PI */
-		free_square_n_float(PI);
+		free_float_n_square_matrix(PI);
 		PI=NULL;
 
 		/* applying PROMETHEE */
@@ -197,7 +231,7 @@ print_PHI(PHI);
 #endif
 
 		/* dealloc PHI */
-		free_square_n_float(PHI);
+		free_float_n_square_matrix(PHI);
 		PHI=NULL;
 
 #ifdef PRINT_STUFFS
@@ -233,6 +267,8 @@ print_aggregated_S_l(S);
 
 	/* free_remaining_data ;P */
 	free_remaining_data(E);
+
+    read_sorting_data(argv);
 
 	return EXIT_SUCCESS;
 }

@@ -36,7 +36,7 @@ AIM = MCDA
 
 all: $(AIM)
 
-MCDA: $(OBJECTS)/main.o $(OBJECTS)/expert.o
+MCDA: $(OBJECTS)/main.o $(OBJECTS)/flowsort.o $(OBJECTS)/promethee.o $(OBJECTS)/expert.o
 	$(C) $(C99) $(DEBUG) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o MCDA main.o $(CFLAGS) $(OPTIMIZATION)
 
@@ -44,7 +44,15 @@ $(OBJECTS)/expert.o : $(SOURCES)/expert.c $(HEADERS)/expert.h
 	$(C) $(C99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o expert.o -c expert.c $(CFLAGS) $(OPTIMIZATION)
 
-$(OBJECTS)/main.o : $(SOURCES)/main.c $(HEADERS)/expert.h $(HEADERS)/main.h
+$(OBJECTS)/promethee.o : $(SOURCES)/promethee.c $(HEADERS)/promethee.h $(HEADERS)/expert.h
+	$(C) $(C99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
+#	$(C) $(DEBUG) -o expert.o -c expert.c $(CFLAGS) $(OPTIMIZATION)
+
+$(OBJECTS)/flowsort.o : $(SOURCES)/flowsort.c $(HEADERS)/flowsort.h $(HEADERS)/promethee.h $(HEADERS)/expert.h
+	$(C) $(C99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
+#	$(C) $(DEBUG) -o main.o -c main.c $(CFLAGS) $(OPTIMIZATION)
+
+$(OBJECTS)/main.o : $(SOURCES)/main.c $(HEADERS)/flowsort.h $(HEADERS)/expert.h
 	$(C) $(C99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o main.o -c main.c $(CFLAGS) $(OPTIMIZATION)
 
