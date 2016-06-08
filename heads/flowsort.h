@@ -4,34 +4,36 @@
 
 #include "../heads/promethee.h"
 
-int N_CAT;/* the number of categories */
-
 typedef struct categorie
 {
     int alternative;
     struct categorie* next_alternative;
 }categorie;/* a "categorie" is a container of different alternatives <=> a linked-list of alternatives */
 
-float** R;/* the reference profiles matrix : size N_CAT*K, where K is the number of criteria */
-categorie* C;/* C is the set of N_CAT categories */
+typedef categorie* ptr_cat;
 
-float** sorting_level_criterion(const float* e_l_i, int j);
-
-/** the size of the performance degrees between the actions and reference profiles is : 2*(N*sizeof(R)),
- *   2* since for entering and leaving performance for each alternative
-*/
-float** in_pref_deg_profil_actions(data E, float** R);
-float** out_pref_deg_profil_actions(data E, float** R);
+ptr_cat** C;/* C is the set of 3*N_CAT ptr to categories : comparing to the positive, negative and net flows. */
 
 
-/** flow_sort
+/** add_a_categorie
+ * 
+ * an object "categorie" is a linked-list of actions. This function adds an action to the current category.
+ * 
+ * @param : the action to_add to head of the category
+ * @return : the head of the category with the new added action
+ *  
+ */
+ptr_cat add_a_categorie(ptr_cat head, int to_add);
+
+/** flowsort
+ * 
+ * The main function that performs the sorting : flowsort
  *
- * applies the flowsort method
- *
- * @param : the data to get the evaluation of the actions, R is known and is a global variable
- *
-*/
-void flow_sort(data E);
+ * @param : the flows.
+ * 
+ */
+void flowsort(float** PHI);
+
 
 #endif
 

@@ -7,7 +7,7 @@
 #include "../heads/promethee.h"
 
 /* display the results */
-/* #define PRINT_STUFFS */
+#define PRINT_STUFFS
 
 /* =========================================================== */
 /* Portion of code to use only if one wants to display results */
@@ -49,11 +49,13 @@
 
 		printf("The unicriterion preference function\n");
 
-		for(a=0;a<N;a++)
+		for(a=0;a<N-1;a++)
 		{
 			printf("%d\t:",a);
 
-			for(b=0;b<N;b++)
+			for(b=0;b<a;b++)	printf("\t\t");
+
+			for(b=a+1;b<N;b++)
 			{
 				printf("%f\t",P_l[a][b]);
 			}
@@ -250,33 +252,53 @@ void free_S(float** S)
 }
 
 
-float** level_criterion(const float* e_l_i, int j)
+float** level_criterion(const float* e_l_i, int j, bool sort_shift)
 {
-	int a=0,b=0,best=-1,worst=-1,i=0;
+	int a=0,b=0,i=0, n_cols=0, n_ites=0;
 	float d=0., buff=0.;
 	bool assigned=false;
 	float** P_i;
 
+	/* the number of columns and number of iterations change given the purpose of the calculation :
+			is it needed for the ranking or sorting method (given by the boolean "sort_shift"). */
+	if(sort_shift)
+	{
+		n_cols=N_CAT;
+		n_ites=N;
+	}
+	else
+	{
+		n_cols=N;
+		n_ites=N-1;
+	}
+
 	P_i=malloc(	N*sizeof(float*));
+
 	if(P_i == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
 	for(i=0;i<N;i++)
 	{
-		P_i[i]=calloc(N,sizeof(float));
+		P_i[i]=calloc(n_cols,sizeof(float));
 		if(P_i[i] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 	}
 
 	assigned=false;
 
-	for(a=0;a<N-1;a++)
+	for(a=0;a<n_ites;a++)
 	{
-		for(b=a+1;b<N;b++)
-		{
-			d=e_l_i[a]-e_l_i[b];
+		if(sort_shift)
+			b=0;
+		else
+			b=a+1;
 
-			best=a;worst=b;/* supposition */
-			if(d<0)/* then bPa, thus a isn't the best, switch best-worst. */
-			{best=b;worst=a;}
+		for(;b<n_cols;b++)
+		{
+			if(sort_shift)
+				d=e_l_i[a]-R[b][j];
+			else
+			{/* if nonsorting <=> if ranking */
+				d=e_l_i[a]-e_l_i[b];
+			}
 
 			assigned=false;
 			i=0;
@@ -286,7 +308,7 @@ float** level_criterion(const float* e_l_i, int j)
 			{
 				if( buff < THRESHOLDS[j][i] )
 				{
-					P_i[best][worst]=LEV_CRIT_GRADS[i];
+					P_i[a][b]=( d >= 0 ? LEV_CRIT_GRADS[i] : -(LEV_CRIT_GRADS[i]) );
 					assigned=true;
 					continue;
 				}
@@ -295,7 +317,7 @@ float** level_criterion(const float* e_l_i, int j)
 
 				if( i==3 )
 				{/* End of the threshold array => strict preferrence */
-					P_i[best][worst]=LEV_CRIT_GRADS[i];
+					P_i[a][b]=( d >= 0 ? LEV_CRIT_GRADS[i] : -(LEV_CRIT_GRADS[i]) );
 					assigned=true;
 				}
 			}
@@ -306,39 +328,73 @@ float** level_criterion(const float* e_l_i, int j)
 }
 
 
-float** compute_pref_indices(float*** P_l)
+float** compute_pref_indices(float*** P_l, bool sort_shift)
 {
-	int j=0, a=0, b=0;
+	int j=0, a=0, b=0, n_rows=0, n_cols=0, n_ites=0;
 	float num_1=0., num_2=0., denom=0., buff=0.;
+	float** PI;
 
-	float** PI=malloc(N*sizeof(float*));
+	if(sort_shift)
+	{
+		n_cols=N_CAT;
+		n_ites=N;
+		n_rows=(2*N);
+	}
+	else
+	{
+		n_cols=N;
+		n_ites=N-1;
+		n_rows=N;
+	}
+
+	PI=malloc(n_rows*sizeof(float*));
+
 	if(PI == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
-	for(j=0;j<N;j++)
+	for(j=0;j<n_rows;j++)
 	{
-		PI[j]=calloc(N,sizeof(float));
+		PI[j]=calloc(n_cols,sizeof(float));
 		if(PI[j] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 	}
 
 	/* the denominator is : sum{j in 1 to K}(criterion_weights[j]) */
 	for(j=0;j<K;j++){denom+=(criterion_weights[j]);}
 
-	for(a=0;a<N-1;a++)
+	for(a=0;a<n_ites;a++)
 	{
-		for(b=a+1;b<N;b++)
+		if(sort_shift)
+			b=0;
+		else
+			b=a+1;
+
+		for(;b<n_cols;b++)
 		{
 			num_1=num_2=0.;
 			for(j=0;j<K;j++)
 			{
-				buff=(P_l[j][a][b]*criterion_weights[j]);
-				num_1+=buff;
-				buff=(P_l[j][b][a]*criterion_weights[j]);
-				num_2+=buff;
+				if(P_l[j][a][b] < 0)
+				{
+					buff=( -(P_l[j][a][b])*criterion_weights[j] );
+					num_2+=buff;
+				}
+				else
+				{
+					buff=( P_l[j][a][b]*criterion_weights[j] );
+					num_1+=buff;
+				}
 			}
+			
 			buff=num_1/denom;
 			PI[a][b]+=buff;
 			buff=num_2/denom;
-			PI[b][a]+=buff;
+
+			/* the leaving preference indices are indexed from act_1 to act_n 
+				and the entering are indexed from N+act_1 to N+act_n */
+			if(sort_shift)
+				PI[N+a][b]+=buff;
+
+			else
+				PI[b][a]+=buff;
 		}
 	}
 
@@ -346,37 +402,100 @@ float** compute_pref_indices(float*** P_l)
 }
 
 
-float** compute_phi(float** PI)
+float** compute_phi(float** PI, bool sort_shift)
 {
-	int a=0, b=0;
+	int a=0, b=0, n_cols=0, n_ites=0, denom=0;
+	float** PHI;
 
-	float** PHI=malloc(N*sizeof(float*));
+	if(sort_shift)
+	{
+		/** Caution : the matrix is organised as follow :
+		 * 		The number of rows are still 3, for in-out-net flows
+		 * 		!!!BUT!!! the number of columns are (N_CAT+1)*N with order :
+		 * 			r{1}_R{1}, r{2}_R{1}, r{3}_R{1}, ..., r{N_CAT}_R{1}, a{1}_R{1}, r{1}_R{2}, r{2}_R{2}, ..., r{N_CAT}_R{2}, a{2}_R{2},
+		 * 				..., r{N_CAT}_R{N-1}, a{N-1}_R{N-1}, r{1}_R{N}, r{2}_R{N}, r2_R2, ..., r{N_CAT}_R{N}, a{N}_R{N}
+		 */
+		n_cols=N_CAT;
+		denom=N_CAT;/* since R_{i}^{*} = R^{*} U a_{i}, then |R_{i}^{*}|-1 = |R^{*}| (the new set is extended by one element, withraw one and the numbers of elements is equal to the number of elements in the previous set) */
+		n_ites=N;
+	}
+	else
+	{
+		n_cols=N;
+		denom=N-1;
+		n_ites=N-1;
+	}
+
+	PHI=malloc(3*sizeof(float*));
 	if(PHI == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
 	for(a=0;a<3;a++)
 	{
-		PHI[a]=calloc(N,sizeof(float));
+		if(sort_shift)
+			PHI[a]=calloc((N_CAT+1)*N,sizeof(float));
+		else
+			PHI[a]=calloc(n_cols,sizeof(float));
 		if(PHI[a] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 	}
 
-	/* Summing the scores on the prefs inds */
-	for(a=0;a<N-1;a++)
-	{
-		for(b=a+1;b<N;b++)
+	/* in case of sorting, set strong preference degrees between limiting/centroids profiles */
+	if(sort_shift)
+		for(a=0;a<N;a++)
 		{
-			PHI[0][a]+=PI[a][b];/* outranking */
-			PHI[1][a]+=PI[b][a];/* outranked */
+			for(b=0;b<N_CAT;b++)
+			{
+				PHI[0][((N_CAT+1)*a)+b]=N_CAT-1-b;
+				PHI[1][((N_CAT+1)*a)+b]=b;
+			}
+		}
 
-			/* Fill for b at the same time */
-			PHI[0][b]+=PI[b][a];
-			PHI[1][b]+=PI[a][b];
+	/* Summing the scores on the prefs inds */
+	for(a=0;a<n_ites;a++)
+	{
+		if(sort_shift)
+		{
+			PHI[0][((N_CAT+1)*a)+N_CAT]=0;
+			PHI[1][((N_CAT+1)*a)+N_CAT]=0;
+			b=0;
+		}
+		else
+			b=a+1;
+
+		for(;b<n_cols;b++)
+		{
+			if(sort_shift)
+			{
+				/* CAUTION CAUTION CAUTION :
+				 * =========================
+				 *  read the structure of PI at the definition of the function "compute_pref_indices", file : promethee.h
+				 */
+				PHI[0][((N_CAT+1)*a)+N_CAT]+=PI[a][b];
+				PHI[1][((N_CAT+1)*a)+N_CAT]+=PI[N+a][b];
+
+				PHI[0][((N_CAT+1)*a)+b]+=PI[N+a][b];
+				PHI[1][((N_CAT+1)*a)+b]+=PI[a][b];
+			}
+			else
+			{
+				PHI[0][a]+=PI[a][b];/* outranking */
+				PHI[1][a]+=PI[b][a];/* outranked */
+
+				/* Fill b at the same time */
+				PHI[0][b]+=PI[b][a];
+				PHI[1][b]+=PI[a][b];
+			}
 		}
 	}
 
-	for(a=0;a<N;a++)
+	if(sort_shift)
+		n_cols=(N_CAT+1)*N;
+	else
+		n_cols=N;
+
+	for(a=0;a<n_cols;a++)
 	{
-		PHI[0][a]/=(N-1);
-		PHI[1][a]/=(N-1);
+		PHI[0][a]/=denom;
+		PHI[1][a]/=denom;
 		PHI[2][a]=PHI[0][a]-PHI[1][a];/* Net flow */
 	}
 

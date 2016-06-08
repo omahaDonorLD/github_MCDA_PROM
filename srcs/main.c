@@ -8,6 +8,9 @@
 /* Uncomment the line below to use PROM_II. Otherwise PROM I is the default PROMETHEE used. */
 /* #define COMPLETE_PREORDER */
 
+/* display the results */
+#define PRINT_STUFFS
+
 
 /** read_data
  *
@@ -138,16 +141,20 @@ void read_sorting_data(char** argv)
 
 	/* assign values for the reference profiles */
 	R=malloc(N_CAT*sizeof(float*));
-	C=malloc(N_CAT*sizeof(categorie));
+	C=malloc(3*sizeof(ptr_cat*));
+
+	for(j=0; j<3; j++)
+	{
+		C[j]=malloc((N_CAT-1)*sizeof(ptr_cat*));
+		for(i=0; i<N_CAT; i++)
+			C[j][i]=NULL;/* alternative < 0 denotes an empty category */
+	}
 
     for(i=0; i<N_CAT; i++)
     {
-        C[i].alternative=-1;/* alternative < 0 denotes an empty category */
-        R[i]=calloc(K,sizeof(float));
-    }
-
-    for(i=0; i<N_CAT; i++)
+		R[i]=calloc(K,sizeof(float));
         for(j=0; j<K; j++)  if( fscanf(fp,"%f", &R[i][j]) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
+	}
 
 	fclose(fp);
 }
@@ -187,7 +194,7 @@ printf("Expert %d\n",l);
 
 		for(i=0;i<K;i++)
 		{/* computes P_1_l,..., P_K_l and gathers them into P_l */
-			P_l[i]=level_criterion(E[l].e_ij[i], i);
+			P_l[i]=level_criterion(E[l].e_ij[i], i, false);
 		}
 
 #ifdef PRINT_STUFFS
@@ -197,7 +204,7 @@ print_P_l(P_l[i]);
 
 		/* Reminder : PI(a,b) = [ ( sum{j in 1 to K}(w[j]*P[j](a,b)) )/( sum{i in 1 to K} (w[j]) ) ] and is of size n*n.
 			PI(a,b) ~ P_j(a,b) considering simultaneously all the criteria */
-		PI=compute_pref_indices(P_l);
+		PI=compute_pref_indices(P_l, false);
 
 		/* dealloc memory provided for P_l[i] */
 		for(i=0;i<K;i++)
@@ -209,7 +216,7 @@ print_P_l(P_l[i]);
 		free(P_l);
 		P_l=NULL;
 
-		PHI=compute_phi(PI);
+		PHI=compute_phi(PI, false);
 
 #ifdef PRINT_STUFFS
 print_PI(PI);
@@ -262,16 +269,46 @@ print_ranks();
 print_aggregated_S_l(S);
 #endif
 
+
+if(argc > 2)
+{
+/*********sorting************************/
+
+
+    read_sorting_data(argv);
+
+	for(l=0;l<M;l++)
+	{
+
+		P_l=malloc(K*sizeof(float**));
+		if(P_l == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+
+		for(i=0;i<K;i++)
+		{/* computes P_1_l,..., P_K_l and gathers them into P_l */
+			P_l[i]=level_criterion(E[l].e_ij[i], i, true);
+		}
+
+		PI=compute_pref_indices(P_l, true);
+		PHI=compute_phi(PI, true);
+		flowsort(PHI);
+
+#ifdef PRINT_STUFFS
+print_categories();
+#endif
+
+	}
+
+
+/******************************************/
+}
+
 	free_S(S);
 #endif /* ends the first #ifdef PRINT_STUFFS */
 
 	/* free_remaining_data ;P */
 	free_remaining_data(E);
 
-    read_sorting_data(argv);
-
 	return EXIT_SUCCESS;
 }
 
 #endif
-

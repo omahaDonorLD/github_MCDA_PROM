@@ -18,13 +18,17 @@
 
 int M, K, N;/* Parameters : M "experts", K criteria, N alternatives/actions */
 
+/* the two next variables are only used when sorting is to be applied */
+int N_CAT;/* the number of categories */
+float** R;/* the reference profiles matrix : size N_CAT*K, where K is the number of criteria */
+
 /* Note : array of size [M+1][N]. The (M+1)th list contains the "global" result with all the experts :
  * for a in A, RANKS[M+1][a] = sum {l in 1 to M} (rank_{l}(a))
 */
 int** RANKS;
 float* COMPLETE_PREORDER_S;
 
-/* Threshold and the with respect to level criterion shape */
+/* Thresholds and their preference values with respect to level criterion shape */
 float* LEV_CRIT_GRADS;
 float** THRESHOLDS;
 
@@ -49,18 +53,32 @@ int qsort_comparator(const void* pa, const void* pb);
  * @return : P_k_l, of value 0/0.5/1 as defined by the level criterion shape.
  *
 */
-float** level_criterion(const float* e_l_i, int j);
+float** level_criterion(const float* e_l_i, int j, bool sort_shift);
 
 
 /** compute_pref_indices
  *
  * Build the matrix of preference indices (PI).
- *
+ * 
+ * Note : The structure of PI table is singular (Sorry, a mistake from the beginning, but a change would need a lot of others changing and the due date is really close, and that is it, and just stick to, and deal with it, and :P ...)
+ * 
+ *			PI		|	r_{1}					r_{2}				...				r_{K}
+ * 		========================================================================================
+ * 	OUT		a_{1}	|	PI[a_{1},r_{1}]			PI[a_{1},r_{2}]		...				PI[a_{1},r_{K}]
+ *			a_{2}	|	PI[a_{2},r_{1}]			PI[a_{2},r_{2}]		...				PI[a_{2},r_{K}]
+ * 			...		|	...						...					...				...
+ * 			a_{N}	|	PI[a_{N},r_{1}]			PI[a_{N},r_{2}]		...				PI[a_{N},r_{K}]
+ * 
+ * 	IN		a_{1}	|	PI[r_{1},a_{1}]			PI[r_{2},a_{1}]		...				PI[r_{K},a_{1}]
+ *			a_{2}	|	PI[r_{1},a_{2}]			PI[r_{2},a_{2}]		...				PI[r_{K},a_{2}]
+ * 			...		|	...						...					...				...
+ * 			a_{N}	|	PI[r_{1},a_{N}]			PI[r_{2},a_{N}]		...				PI[r_{K},a_{N}]
+ * 
  * @param : P_l, the complete vector of K P_k_l, i.e. : P_l = (P_1_l, ... , P_K_l).
  * @return : PI, the matrix of preference indices.
  *
 */
-float** compute_pref_indices(float*** P_l);
+float** compute_pref_indices(float*** P_l, bool sort_shift);
 
 
 /** compute_phi
@@ -71,7 +89,7 @@ float** compute_pref_indices(float*** P_l);
  * @return : PHI, the matrix of flows (0, 1 and 2 respectively the outranking, outranked and net values.).
  *
 */
-float** compute_phi(float** PI);
+float** compute_phi(float** PI, bool sort_shift);
 
 
 /** PROM_1
@@ -134,7 +152,6 @@ void free_alloc_for_PROM_II();
 
 /** Free data **/
 void free_S(float** S);
-
 
 #endif
 
