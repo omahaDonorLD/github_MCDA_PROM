@@ -145,6 +145,9 @@ float** aggregate_S_l(const data E);
 void free_float_n_square_matrix(float** two_d_float);
 
 /** Free data **/
+void free_PHI(float** PHI);
+
+/** Free data **/
 void free_remaining_data(data E);
 
 /** Free data **/

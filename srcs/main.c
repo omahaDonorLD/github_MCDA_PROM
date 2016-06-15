@@ -142,6 +142,7 @@ void read_sorting_data(char** argv)
 	/* assign values for the reference profiles */
 	R=malloc(N_CAT*sizeof(float*));
 	C=malloc(3*sizeof(ptr_cat*));
+	act_to_cat=malloc(N*sizeof(int*));
 
 	for(j=0; j<3; j++)
 	{
@@ -152,6 +153,7 @@ void read_sorting_data(char** argv)
 
     for(i=0; i<N_CAT; i++)
     {
+		act_to_cat[i]=calloc(3,sizeof(int));
 		R[i]=calloc(K,sizeof(float));
         for(j=0; j<K; j++)  if( fscanf(fp,"%f", &R[i][j]) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
 	}
@@ -224,7 +226,6 @@ print_PI(PI);
 
 		/* dealloc memory for PI */
 		free_float_n_square_matrix(PI);
-		PI=NULL;
 
 		/* applying PROMETHEE */
 #ifdef COMPLETE_PREORDER
@@ -238,8 +239,7 @@ print_PHI(PHI);
 #endif
 
 		/* dealloc PHI */
-		free_float_n_square_matrix(PHI);
-		PHI=NULL;
+		free_PHI(PHI);
 
 #ifdef PRINT_STUFFS
 print_S_l(E[l].S_l);
@@ -293,7 +293,7 @@ if(argc > 2)
 		flowsort(PHI);
 
 #ifdef PRINT_STUFFS
-print_categories();
+print_categories(PHI);
 #endif
 
 	}

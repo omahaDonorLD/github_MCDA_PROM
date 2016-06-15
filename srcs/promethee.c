@@ -222,6 +222,20 @@ void free_remaining_data(data E)
 }
 
 
+void free_PHI(float** PHI)
+{
+	int a=0;
+
+	for(a=0;a<3;a++)
+	{
+		free(PHI[a]);
+		PHI[a]=NULL;
+	}
+	free(PHI);
+	PHI=NULL;
+}
+
+
 void free_alloc_for_PROM_II(void)
 {
 	int i=0;

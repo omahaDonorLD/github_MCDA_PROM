@@ -4,6 +4,7 @@
 
 #include "../heads/promethee.h"
 
+
 typedef struct categorie
 {
     int alternative;
@@ -13,11 +14,12 @@ typedef struct categorie
 typedef categorie* ptr_cat;
 
 ptr_cat** C;/* C is the set of 3*N_CAT ptr to categories : comparing to the positive, negative and net flows. */
+int** act_to_cat;/* C is the set of 3*N_CAT ptr to categories : comparing to the positive, negative and net flows. */
 
 
 /** add_a_categorie
  * 
- * an object "categorie" is a linked-list of actions. This function adds an action to the current category.
+ * an object "categorie" is a linked-list of actions. This function adds an action to the category "head".
  * 
  * @param : the action to_add to head of the category
  * @return : the head of the category with the new added action

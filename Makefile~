@@ -12,7 +12,7 @@ HEADERS = heads
 OBJECTS = objs
 
 # Options of compilation
-CFLAGS = -Wall -W -Wextra -pedantic -ansi
+#CFLAGS = -Wall -W -Wextra -pedantic -ansi
 
 # use of G99 version
 G99 = -std=c99
