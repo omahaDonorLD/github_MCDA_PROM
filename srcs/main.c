@@ -35,12 +35,14 @@ data read_data(char** argv)
 	THRESHOLDS=malloc(K*sizeof(float*));
 	if(THRESHOLDS == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
+STDs=malloc(K*sizeof(float*));
 	for(i=0;i<K;i++)
 	{/* get the thresholds for each criterion */
 		THRESHOLDS[i]=calloc(3,sizeof(float));/* -q, q and p for each criteria */
 		if(THRESHOLDS[i] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 		if( fscanf(fp,"%f %f", &THRESHOLDS[i][1], &THRESHOLDS[i][2]) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
 		THRESHOLDS[i][0]= -(THRESHOLDS[i][1]);
+STDs[i]=malloc(N*sizeof(float*));
 	}
 
 	LEV_CRIT_GRADS=malloc(4*sizeof(float));
@@ -109,10 +111,16 @@ data read_data(char** argv)
 			/* get the evaluation done by expert l to action k with respect to criterion j */
 			for(k=0;k<N;k++)
 			{
-				if( fscanf(fp,"%f", &buff) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);};
+				/* if( fscanf(fp,"%f", &buff) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}; */
+				/* If the stochastic case, gather the  */
+				if( fscanf(fp,"%f,%f", &buff, &STDs[j][k]) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);};
 				E[i].e_ij[j][k]=buff;
 			}
 		}
+	}
+	
+	for(i=0;i<M;i++)
+	{
 	}
 
 	fclose(fp);
@@ -196,7 +204,8 @@ printf("Expert %d\n",l);
 
 		for(i=0;i<K;i++)
 		{/* computes P_1_l,..., P_K_l and gathers them into P_l */
-			P_l[i]=level_criterion(E[l].e_ij[i], i, false);
+			/* P_l[i]=level_criterion(E[l].e_ij[i], i, false); */
+			P_l[i]=EPF_level_criterion(E[l].e_ij[i], i, false);
 		}
 
 #ifdef PRINT_STUFFS
@@ -224,9 +233,6 @@ print_P_l(P_l[i]);
 print_PI(PI);
 #endif
 
-		/* dealloc memory for PI */
-		free_float_n_square_matrix(PI);
-
 		/* applying PROMETHEE */
 #ifdef COMPLETE_PREORDER
 		PROM_2((E+l), PHI);
@@ -238,9 +244,6 @@ print_PI(PI);
 print_PHI(PHI);
 #endif
 
-		/* dealloc PHI */
-		free_PHI(PHI);
-
 #ifdef PRINT_STUFFS
 print_S_l(E[l].S_l);
 #endif
@@ -248,6 +251,14 @@ print_S_l(E[l].S_l);
 #ifdef COMPLETE_PREORDER
 		rank_single(E[l].S_l, l);/* ranks the projects with respect to opinion of l and store the ranking into "RANKS" list. */
 #endif
+
+write_prom_results(l, PI, PHI, E[l].S_l, argv);
+
+		/* dealloc memory for PI */
+		free_float_n_square_matrix(PI);
+
+		/* dealloc PHI */
+		free_PHI(PHI);
 
 	}
 
@@ -293,7 +304,7 @@ if(argc > 2)
 		flowsort(PHI);
 
 #ifdef PRINT_STUFFS
-print_categories(PHI);
+write_flowsort_results(PHI, argv);
 #endif
 
 	}

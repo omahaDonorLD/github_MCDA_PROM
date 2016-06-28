@@ -161,6 +161,53 @@
 
 		printf("End print_aggregated_S_l\n");
 	}
+	
+	void write_prom_results(int l, float **PI, float **PHI, expert_pref* first, char **argv)
+	{
+		int a=0,b=0;
+		FILE *f;
+		char path[30];
+		char buff[30];
+		expert_pref* current_iterator;
+
+		strcpy(path,"./outputs/prom_");
+		strcpy(buff,argv[1]);
+		strtok(buff,"/");
+		strcat(path,strtok(NULL,"/"));
+
+		if(l==0)
+			f=fopen(path,"w");
+		else
+			f=fopen(path,"a");
+
+		/* Write the results obtained for PI */
+		for(a=0;a<N;a++)
+		{
+			for(b=0;b<N;b++)
+				fprintf(f,"%f ", PI[a][b]);
+			fprintf(f,"\n");
+		}
+
+		/* Write the results obtained for PHI */
+		for(a=0;a<3;a++)
+		{
+			for(b=0;b<N;b++)
+				fprintf(f,"%f ", PHI[0][a]);
+			fprintf(f,"\n");
+		}
+		
+		/* Write the binary preference relation for a given expert */
+		current_iterator=first;
+		while(current_iterator!=NULL)
+		{
+			fprintf(f,"(%d,%d,%d)\t",current_iterator->a,current_iterator->b,current_iterator->p);
+			current_iterator=current_iterator->NEXT_S_l;
+		}
+		fprintf(f,"\n");
+
+		
+		fclose(f);
+	}
 
 #endif
 /*==================== End of printing stuffs ========================*/

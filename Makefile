@@ -12,7 +12,7 @@ HEADERS = heads
 OBJECTS = objs
 
 # Options of compilation
-CFLAGS = -Wall -W -Wextra -pedantic -ansi
+CFLAGS = -Wall -W -Wextra -pedantic
 
 # use of G99 version
 G99 = -std=c99
@@ -36,7 +36,7 @@ AIM = MCDA
 
 all: $(AIM)
 
-MCDA: $(OBJECTS)/main.o $(OBJECTS)/flowsort.o $(OBJECTS)/promethee.o $(OBJECTS)/expert.o
+MCDA: $(OBJECTS)/main.o $(OBJECTS)/flowsort.o $(OBJECTS)/stoch_prom.o $(OBJECTS)/promethee.o $(OBJECTS)/expert.o
 	$(C) $(G99) $(DEBUG) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o MCDA main.o $(CFLAGS) $(OPTIMIZATION)
 
@@ -48,7 +48,11 @@ $(OBJECTS)/promethee.o : $(SOURCES)/promethee.c $(HEADERS)/promethee.h $(HEADERS
 	$(C) $(G99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o expert.o -c expert.c $(CFLAGS) $(OPTIMIZATION)
 
-$(OBJECTS)/flowsort.o : $(SOURCES)/flowsort.c $(HEADERS)/flowsort.h $(HEADERS)/promethee.h $(HEADERS)/expert.h
+$(OBJECTS)/stoch_prom.o : $(SOURCES)/stoch_prom.c $(HEADERS)/stoch_prom.h $(HEADERS)/promethee.h
+	$(C) $(G99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
+#	$(C) $(DEBUG) -o expert.o -c expert.c $(CFLAGS) $(OPTIMIZATION)
+
+$(OBJECTS)/flowsort.o : $(SOURCES)/flowsort.c $(HEADERS)/flowsort.h $(HEADERS)/stoch_prom.h
 	$(C) $(G99) $(DEBUG) -o $@ -c $< $(LDFLAGS) $(CFLAGS)
 #	$(C) $(DEBUG) -o main.o -c main.c $(CFLAGS) $(OPTIMIZATION)
 

@@ -1,0 +1,22 @@
+
+Two outputs are possible for a Multicriteria Problem numerical instance : The ranking result and the sorting result.
+
+I) The result of the application of the PROMETHEE method (I or II). It is contained in a file named : ranking_[name_of_instance] in the "outputs" directory.
+Its content : 
+
+	- M time (for each expert) the following results :
+		-- PI, the multicriteria preference function
+		-- PHI, the outranking/outranked/net flows
+		-- S_l, the binary preference relations set.
+			** a number of elements of the format (a,b,c), where a and b are the projects and c is the value of the binary relation :
+				=> 3 for the preference relation : (a,b,3) a is preferred to b
+				=> 2 for the indifference relation : (a,b,2) a and b are indifferent ((b,a,2) should be too into the preference relation set.)
+				=> 1 for the incomparability relation : (a,b,1) a and b are incomparable ((b,a,1) should be too into the preference relation set.)
+
+
+	- In case of a :
+		-- Partial preorder (PROMETHEE I) : the weighted aggregation of the overall binary preference relations.
+		-- Complete preorder (PROMETHEE II) : The complete ranking for each expert and the sum of ranks over all the experts (the ranking over all the experts can then be done by a ranking from the lowest sum value to the highest.)
+
+		
+

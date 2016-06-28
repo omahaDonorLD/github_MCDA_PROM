@@ -4,31 +4,32 @@
 
 #include "expert.h"
 
-/* Values for P(a,b), use of LEVEL CRITERION */
+/** Values for P(a,b), use of LEVEL CRITERION */
 #define NO_PREF 0.
 #define INDIFF 0.
 #define WEAK_PREF 0.5
 #define PREF 1.
 
-/* Note  : the "PHI" array (the matrix of flows) is a 3*N matrix, for which the :
+/** Note  : the "PHI" array (the matrix of flows) is a 3*N matrix, for which the :
  *  - first line ( [0][i] | i in 1,..,N ) contains the outranking flow of i,
  *  - 2nd ( [1][i] | i in 1,..,N ) contains the outranked flow of i,
  *  - 3rd ( [2][i] | i in 1,..,N ) contains the net flow of i.
 */
 
-int M, K, N;/* Parameters : M "experts", K criteria, N alternatives/actions */
+/** Parameters : M experts, K criteria, N alternatives/actions. */
+int M, K, N;
 
-/* the two next variables are only used when sorting is to be applied */
+/** the two next variables are only used when a sorting is to be performed. */
 int N_CAT;/* the number of categories */
 float** R;/* the reference profiles matrix : size N_CAT*K, where K is the number of criteria */
 
-/* Note : array of size [M+1][N]. The (M+1)th list contains the "global" result with all the experts :
+/** Note : array of size [M+1][N]. The (M+1)th list contains the "global" result with all the experts :
  * for a in A, RANKS[M+1][a] = sum {l in 1 to M} (rank_{l}(a))
 */
 int** RANKS;
 float* COMPLETE_PREORDER_S;
 
-/* Thresholds and their preference values with respect to level criterion shape */
+/** Thresholds and their preference values with respect to level criterion shape */
 float* LEV_CRIT_GRADS;
 float** THRESHOLDS;
 
@@ -60,7 +61,8 @@ float** level_criterion(const float* e_l_i, int j, bool sort_shift);
  *
  * Build the matrix of preference indices (PI).
  * 
- * Note : The structure of PI table is singular (Sorry, a mistake from the beginning, but a change would need a lot of others changing and the due date is really close, and that is it, and just stick to, and deal with it, and :P ...)
+ * Note : The structure of PI table is singular when the preference indices function is dedicated to the sorting (Sorry, this is due to a mistake done from the beginning, but a change would have required a lot of others change, and the due date is really close, and that is it, just deal with it, and :P ...).
+ * 			It is presented as follow :
  * 
  *			PI		|	r_{1}					r_{2}				...				r_{K}
  * 		========================================================================================
@@ -94,7 +96,7 @@ float** compute_phi(float** PI, bool sort_shift);
 
 /** PROM_1
  *
- * Assigns preferences with respect to the PROMETHEE 1 outranking flow.
+ * Assigns the preferences binary relations with respect to the PROMETHEE 1 outranking flow.
  * Note_1 : 0 is NA or not preferred, 1 is R or incomparable, 2 is I or indifference, 3 is the graal P or Preference relation
  * Note_2 : dimensions : PHI[2][N]
  *
@@ -107,7 +109,7 @@ void PROM_1(expert* E_l, float** PHI);
 
 /** rank_single
  *
- * ranking of the projects from just a single experts opinion
+ * ranking of the projects from just one expert
  *
  * @param : the linked list of S_l and the expert l that is doing the ranking.
  * @return : nothing

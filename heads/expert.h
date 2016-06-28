@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <tgmath.h>
 
 /** A linked list denoting the binary preference set of an expert.
 */
@@ -30,7 +31,8 @@ typedef struct expert
 }expert;
 
 
-typedef expert* data;/* "data" is the list of M "opinions" */
+/** "data" is a list of M "opinions" */
+typedef expert* data;
 
 /** adds a new preference relation to the S_l linked list.
 */

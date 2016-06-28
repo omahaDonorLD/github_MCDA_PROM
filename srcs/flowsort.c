@@ -13,14 +13,18 @@
 #ifdef PRINT_STUFFS
 
 
-	void print_categories(float** PHI)
+	void write_flowsort_results(float** PHI, char** argv)
 	{
 		int c=0,i=0,a=0;
 		categorie* ite;
 		FILE *f;
-		
 		char path[30];
-		strcpy(path,"./outputs/sorting_out");
+		char buff[30];
+
+		strcpy(path,"./outputs/flowsort_");
+		strcpy(buff,argv[1]);
+		strtok(buff,"/");
+		strcat(path,strtok(NULL,"/"));
 
 		f=fopen(path,"w");
 		printf("%s\n",path);
