@@ -107,6 +107,17 @@ float** compute_phi(float** PI, bool sort_shift);
 void PROM_1(expert* E_l, float** PHI);
 
 
+/** PROM_1
+ * 
+ * Assigns the preferences binary relations with respect to the PROMETHEE 2 outranking flow.
+ * 
+ * @param : PHI, the flows computed from the data by the expert l.
+ * @return : S_l, the table of binary (kind of) relations.
+ * 
+*/
+void PROM_2(expert* E_l, float** PHI);
+
+
 /** rank_single
  *
  * ranking of the projects from just one expert
@@ -157,6 +168,11 @@ void free_alloc_for_PROM_II();
 
 /** Free data **/
 void free_S(float** S);
+
+
+/** print into file the results of promethee **/
+void write_prom_results(int l, float **PI, float **PHI, expert_pref* first, char **argv);
+void write_prom_global_results(char **argv, float** S);
 
 #endif
 

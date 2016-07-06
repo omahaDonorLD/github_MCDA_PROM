@@ -6,11 +6,10 @@
 #include "../heads/flowsort.h"
 
 /* Uncomment the line below to use PROM_II. Otherwise PROM I is the default PROMETHEE used. */
-/* #define COMPLETE_PREORDER */
+
 
 /* display the results */
 #define PRINT_STUFFS
-
 
 /** read_data
  *
@@ -27,46 +26,58 @@ data read_data(char** argv)
 	data E;
 	FILE* fp;
 
-	fp=fopen(argv[1],"r");
+	fp=fopen(argv[3],"r");
 
-	if( fscanf(fp,"%d %d %d", &M, &K, &N) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
+	if( fscanf(fp,"%d %d %d", &M, &K, &N) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);}
 
 	/* assign values for thresholds and grades of level criteria */
 	THRESHOLDS=malloc(K*sizeof(float*));
-	if(THRESHOLDS == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+	if(THRESHOLDS == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
 
-STDs=malloc(K*sizeof(float*));
+	if(STOCH)
+	{
+		STDs=malloc(K*sizeof(float*));
+		if(STDs == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
+	}
+
 	for(i=0;i<K;i++)
 	{/* get the thresholds for each criterion */
 		THRESHOLDS[i]=calloc(3,sizeof(float));/* -q, q and p for each criteria */
-		if(THRESHOLDS[i] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
-		if( fscanf(fp,"%f %f", &THRESHOLDS[i][1], &THRESHOLDS[i][2]) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
+		if(THRESHOLDS[i] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
+		if( fscanf(fp,"%f %f", &THRESHOLDS[i][1], &THRESHOLDS[i][2]) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);}
 		THRESHOLDS[i][0]= -(THRESHOLDS[i][1]);
-STDs[i]=malloc(N*sizeof(float*));
+
+		if(STOCH)
+		{
+			STDs[i]=calloc(N,sizeof(float));
+			if(STDs[i] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
+		}
 	}
 
-	LEV_CRIT_GRADS=malloc(4*sizeof(float));
-	if(LEV_CRIT_GRADS == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+	LEV_CRIT_GRADS=calloc(4,sizeof(float));
+	if(LEV_CRIT_GRADS == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
 
 	LEV_CRIT_GRADS[0]=NO_PREF; LEV_CRIT_GRADS[1]=INDIFF; LEV_CRIT_GRADS[2]=WEAK_PREF; LEV_CRIT_GRADS[3]=PREF;
 
 	E=malloc(M*sizeof(expert));
-	if(E == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+	if(E == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
 
-#ifdef COMPLETE_PREORDER
-	/* allocate memory for the ranking and "S" when complete preorder PROM II is used */
-	RANKS=malloc(M*sizeof(int*));
-	if(RANKS == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
-	COMPLETE_PREORDER_S=malloc(N*sizeof(float));
-	if(COMPLETE_PREORDER_S == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
-
-	for(i=0;i<M;i++)
+	if(COMPLETE_PREORDER)
 	{
-		RANKS[i]=calloc(N,sizeof(int));
-		if(RANKS[i] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+		/* allocate memory for the ranking and "S" when complete preorder PROM II is used */
+		RANKS=malloc(M*sizeof(int*));
+		if(RANKS == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
+
+		COMPLETE_PREORDER_S=calloc(N,sizeof(float));
+		if(COMPLETE_PREORDER_S == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
+
+		for(i=0;i<M;i++)
+		{
+			RANKS[i]=calloc(N,sizeof(int));
+			if(RANKS[i] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
+		}
 	}
-#endif
 
 	/* alloc memory for each expert */
 	for(i=0;i<M;i++)
@@ -74,7 +85,7 @@ STDs[i]=malloc(N*sizeof(float*));
 		E[i].p_l=0.;
 
 		E[i].e_ij=malloc(K*sizeof(float*));
-		if(E[i].e_ij == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+		if(E[i].e_ij == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
 
 		E[i].S_l=NULL;
 
@@ -82,27 +93,27 @@ STDs[i]=malloc(N*sizeof(float*));
 		for(j=0;j<K;j++)
 		{
 			E[i].e_ij[j]=calloc(N,sizeof(float));
-			if(E[i].e_ij[j] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+			if(E[i].e_ij[j] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
 		}
 	}
 
 	/* alloc memory for the criterion weights */
 	criterion_weights=calloc(K,sizeof(float));
-	if(criterion_weights == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+	if(criterion_weights == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
 
 	buff=0;
 
 	/* get criterion weights */
 	for(i=0;i<K;i++)
 	{
-		if( fscanf(fp,"%f", &buff) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);};
+		if( fscanf(fp,"%f", &buff) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);};
 		criterion_weights[i]=buff;
 	}
 
 	/* gather infos from experts */
 	for(i=0;i<M;i++)
 	{
-		if( fscanf(fp,"%f", &buff) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);};
+		if( fscanf(fp,"%f", &buff) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);};
 		E[i].p_l=buff;
 
 		/* for each criteria... */
@@ -111,18 +122,18 @@ STDs[i]=malloc(N*sizeof(float*));
 			/* get the evaluation done by expert l to action k with respect to criterion j */
 			for(k=0;k<N;k++)
 			{
-				/* if( fscanf(fp,"%f", &buff) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}; */
-				/* If the stochastic case, gather the  */
-				if( fscanf(fp,"%f,%f", &buff, &STDs[j][k]) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);};
+				/* If stochastic case :  */
+				if(STOCH)
+				{
+					if( fscanf(fp,"%f,%f", &buff, &STDs[j][k]) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);};
+				}
+				else
+					if( fscanf(fp,"%f", &buff) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);};
 				E[i].e_ij[j][k]=buff;
 			}
 		}
 	}
 	
-	for(i=0;i<M;i++)
-	{
-	}
-
 	fclose(fp);
 
 	return E;
@@ -139,13 +150,12 @@ STDs[i]=malloc(N*sizeof(float*));
 */
 void read_sorting_data(char** argv)
 {
-
 	int i=0,j=0;
 	FILE* fp;
 
-	fp=fopen(argv[2],"r");
+	fp=fopen(argv[4],"r");
 
-	if( fscanf(fp,"%d", &N_CAT) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
+	if( fscanf(fp,"%d", &N_CAT) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);}
 
 	/* assign values for the reference profiles */
 	R=malloc(N_CAT*sizeof(float*));
@@ -155,15 +165,15 @@ void read_sorting_data(char** argv)
 	for(j=0; j<3; j++)
 	{
 		C[j]=malloc((N_CAT-1)*sizeof(ptr_cat*));
-		for(i=0; i<N_CAT; i++)
-			C[j][i]=NULL;/* alternative < 0 denotes an empty category */
+		for(i=0; i<N_CAT-1; i++)
+			C[j][i]=NULL;/* at first a category is secured by assigning a NULL pointer */
 	}
 
     for(i=0; i<N_CAT; i++)
     {
 		act_to_cat[i]=calloc(3,sizeof(int));
 		R[i]=calloc(K,sizeof(float));
-        for(j=0; j<K; j++)  if( fscanf(fp,"%f", &R[i][j]) < 0 ){printf("EXIT_FAILURE line %d in file %s\n", __LINE__, __FILE__);}
+        for(j=0; j<K; j++)  if( fscanf(fp,"%f", &R[i][j]) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);}
 	}
 
 	fclose(fp);
@@ -179,13 +189,25 @@ int main(int argc, char** argv)
 	float** PI=NULL;
 	float** PHI=NULL;
 
-#ifndef COMPLETE_PREORDER
+	/* used if COMPLETE_PREORDER */
 	float** S;
-#endif
 
-	if( argc < 2 ){printf("Please add more parameters\n");};
+	/* at least 2 arguments are needed */
+	if( argc < 2 ){printf("Please add more parameters\n");return 0;};
+
+	/* stochastic case */
+	if( atoi(argv[1]) == 1 )
+		STOCH=true;
+
+	if( atoi(argv[2]) == 1 )
+		COMPLETE_PREORDER=true;
 
 	E=read_data(argv);
+	
+	/* When a sorting is required, read all data as well. */
+	if(argc > 4)
+		read_sorting_data(argv);
+
 
 #ifdef PRINT_STUFFS
 print_data(E);/* Since data is of type "expert*" one can send directly the object that is a pointer, no copies will be created. */
@@ -199,13 +221,14 @@ printf("Expert %d\n",l);
 #endif
 
 		P_l=malloc(K*sizeof(float**));
-		if(P_l == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
-
+		if(P_l == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
 
 		for(i=0;i<K;i++)
 		{/* computes P_1_l,..., P_K_l and gathers them into P_l */
-			/* P_l[i]=level_criterion(E[l].e_ij[i], i, false); */
-			P_l[i]=EPF_level_criterion(E[l].e_ij[i], i, false);
+			if(STOCH)
+				P_l[i]=EPF_level_criterion(E[l].e_ij[i], i, false);
+			else
+				P_l[i]=level_criterion(E[l].e_ij[i], i, false);
 		}
 
 #ifdef PRINT_STUFFS
@@ -219,9 +242,7 @@ print_P_l(P_l[i]);
 
 		/* dealloc memory provided for P_l[i] */
 		for(i=0;i<K;i++)
-		{
             free_float_n_square_matrix(P_l[i]);
-		}
 
 		/* dealloc memory allocated to P_l, caution it has to be deallocated after deallocating all P_l[i] */
 		free(P_l);
@@ -233,12 +254,11 @@ print_P_l(P_l[i]);
 print_PI(PI);
 #endif
 
-		/* applying PROMETHEE */
-#ifdef COMPLETE_PREORDER
-		PROM_2((E+l), PHI);
-#else
-		PROM_1((E+l), PHI);
-#endif
+		/* apply PROMETHEE */
+		if(COMPLETE_PREORDER)
+			PROM_2((E+l), PHI);
+		else
+			PROM_1((E+l), PHI);
 
 #ifdef PRINT_STUFFS
 print_PHI(PHI);
@@ -248,75 +268,69 @@ print_PHI(PHI);
 print_S_l(E[l].S_l);
 #endif
 
-#ifdef COMPLETE_PREORDER
-		rank_single(E[l].S_l, l);/* ranks the projects with respect to opinion of l and store the ranking into "RANKS" list. */
-#endif
+		/* if COMPLETE_PREORDER, a ranking can be made */
+		if(COMPLETE_PREORDER)
+			rank_single(E[l].S_l, l);/* ranks the projects with respect to opinion of l and store the ranking into "RANKS" list. */
 
-write_prom_results(l, PI, PHI, E[l].S_l, argv);
+		write_prom_results(l, PI, PHI, E[l].S_l, argv);
 
 		/* dealloc memory for PI */
 		free_float_n_square_matrix(PI);
 
 		/* dealloc PHI */
 		free_PHI(PHI);
-
 	}
 
-#ifdef COMPLETE_PREORDER
 	/* PROMETHEE II */
-	get_S_a(E);/* if the ranking is a complete preorder, the computing can be done based on the rankings. */
+	if(COMPLETE_PREORDER)
+	{
+		get_S_a(E);/* if the ranking is a complete preorder, the computing can be done based on the rankings. */
 
 #ifdef PRINT_STUFFS
 printf("complete preorder (PROM II) :\n");
 print_ranks();
 #endif
-
-	free_alloc_for_PROM_II();
-#else
-	/* PROMETHEE I */
-	S=aggregate_S_l(E);/* deallocating E[l].S_l memory is done while aggregating */
+	}
+	else
+	{
+		/* PROMETHEE I */
+		S=aggregate_S_l(E);/* deallocating E[l].S_l memory is done while aggregating */
 
 #ifdef PRINT_STUFFS
 print_aggregated_S_l(S);
 #endif
-
-
-if(argc > 2)
-{
-/*********sorting************************/
-
-
-    read_sorting_data(argv);
-
-	for(l=0;l<M;l++)
-	{
-
-		P_l=malloc(K*sizeof(float**));
-		if(P_l == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
-
-		for(i=0;i<K;i++)
-		{/* computes P_1_l,..., P_K_l and gathers them into P_l */
-			P_l[i]=level_criterion(E[l].e_ij[i], i, true);
-		}
-
-		PI=compute_pref_indices(P_l, true);
-		PHI=compute_phi(PI, true);
-		flowsort(PHI);
-
-#ifdef PRINT_STUFFS
-write_flowsort_results(PHI, argv);
-#endif
-
 	}
 
+	write_prom_global_results(argv, S);
 
-/******************************************/
-}
+	if(COMPLETE_PREORDER)
+		free_alloc_for_PROM_II();
+	else
+		free_S(S);
 
-	free_S(S);
-#endif /* ends the first #ifdef PRINT_STUFFS */
+	/*** apply flowsort... ***/
+	if(argc > 4)
+	{
+		for(l=0;l<M;l++)
+		{
+			P_l=malloc(K*sizeof(float**));
+			if(P_l == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
 
-	/* free_remaining_data ;P */
+			for(i=0;i<K;i++)
+			{/* computes P_1_l,..., P_K_l and gathers them into P_l */
+				P_l[i]=level_criterion(E[l].e_ij[i], i, true);
+			}
+
+			PI=compute_pref_indices(P_l, true);
+			PHI=compute_phi(PI, true);
+			flowsort(PHI);
+
+			/* write results obtained by flowsort */
+			write_flowsort_results(PHI, argv);
+		}
+	}
+
+	/* free remaining data ;P */
 	free_remaining_data(E);
 
 	return EXIT_SUCCESS;

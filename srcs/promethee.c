@@ -171,7 +171,12 @@
 		expert_pref* current_iterator;
 
 		strcpy(path,"./outputs/prom_");
-		strcpy(buff,argv[1]);
+		if(COMPLETE_PREORDER)
+			strcat(path,"2_");
+		else
+			strcat(path,"1_");
+
+		strcpy(buff,argv[3]);
 		strtok(buff,"/");
 		strcat(path,strtok(NULL,"/"));
 
@@ -205,7 +210,53 @@
 		}
 		fprintf(f,"\n");
 
+		fclose(f);
+	}
+	
+	void write_prom_global_results(char **argv, float** S)
+	{
+		int a=0,b=0;
+		FILE *f;
+		char path[30];
+		char buff[30];
 		
+		if(COMPLETE_PREORDER)
+			strcpy(path,"./outputs/ranks_");
+		else
+			strcpy(path,"./outputs/aggr_pref_");
+
+		strcpy(buff,argv[3]);
+		strtok(buff,"/");
+		strcat(path,strtok(NULL,""));
+		f=fopen(path,"w");
+
+		if(COMPLETE_PREORDER)
+		{
+			for(b=0;b<M;b++)
+			{
+				for(a=0;a<N;a++)
+					fprintf(f,"%d ",RANKS[b][a]);
+				fprintf(f,"\n");
+			}
+
+			for(a=0;a<N;a++)
+				fprintf(f,"%f ",COMPLETE_PREORDER_S[a]);
+			fprintf(f,"\n");
+		}
+		else
+		{
+			for(b=0;b<N;b++)
+			{
+				for(a=0;a<N;a++)
+					fprintf(f,"%f ",S[b][a]);
+				fprintf(f,"\n");
+			}
+
+			for(a=0;a<N;a++)
+				fprintf(f, "%f %f\n",S[a][N],S[N][a]);
+			fprintf(f,"\n");
+		}
+
 		fclose(f);
 	}
 
@@ -335,12 +386,12 @@ float** level_criterion(const float* e_l_i, int j, bool sort_shift)
 
 	P_i=malloc(	N*sizeof(float*));
 
-	if(P_i == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+	if(P_i == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 
 	for(i=0;i<N;i++)
 	{
 		P_i[i]=calloc(n_cols,sizeof(float));
-		if(P_i[i] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+		if(P_i[i] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 	}
 
 	assigned=false;
@@ -410,12 +461,12 @@ float** compute_pref_indices(float*** P_l, bool sort_shift)
 
 	PI=malloc(n_rows*sizeof(float*));
 
-	if(PI == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+	if(PI == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 
 	for(j=0;j<n_rows;j++)
 	{
 		PI[j]=calloc(n_cols,sizeof(float));
-		if(PI[j] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+		if(PI[j] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 	}
 
 	/* the denominator is : sum{j in 1 to K}(criterion_weights[j]) */
@@ -488,7 +539,7 @@ float** compute_phi(float** PI, bool sort_shift)
 	}
 
 	PHI=malloc(3*sizeof(float*));
-	if(PHI == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+	if(PHI == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 
 	for(a=0;a<3;a++)
 	{
@@ -496,7 +547,7 @@ float** compute_phi(float** PI, bool sort_shift)
 			PHI[a]=calloc((N_CAT+1)*N,sizeof(float));
 		else
 			PHI[a]=calloc(n_cols,sizeof(float));
-		if(PHI[a] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+		if(PHI[a] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 	}
 
 	/* in case of sorting, set strong preference degrees between limiting/centroids profiles */
@@ -670,12 +721,12 @@ void rank_single(expert_pref* first, int l)
 	/* note : for a more convenient way to use the qsort comparator, buff_scores is
 	 * structured as #lines=N and #columns=2 (index of project, its score) */
 	buff_scores=malloc(N*sizeof(int*));
-	if(buff_scores == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+	if(buff_scores == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 
 	for(i=0;i<N;i++)
 	{
 		buff_scores[i]=calloc(2,sizeof(int));
-		if(buff_scores[i] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+		if(buff_scores[i] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 
 		buff_scores[i][0]=i;/* the first column of each line contains the indices of "projects" to rank. */
 	}
@@ -697,18 +748,22 @@ void rank_single(expert_pref* first, int l)
 	rank=0;
 	for(i=0;i<N;i++)
 	{
-		if( buff_scores[i][1] != previous_sln )
+		if( buff_scores[i][1] != previous_sln )/* if the two indices have not equals scores */
 		{
 			previous_sln=buff_scores[i][1];
 			rank++;
 		}
-		RANKS[l][buff_scores[i][0]]=rank;
+		RANKS[l][buff_scores[i][0]]=rank;/* => same scores, same rank (no "average" in case of ties) */
 	}
 
 	for(i=0;i<N;i++)
+	{
 		free(buff_scores[i]);
+		buff_scores[i]=NULL;
+	}
 
 	free(buff_scores);
+	buff_scores=NULL;
 }
 
 
@@ -737,12 +792,12 @@ float** aggregate_S_l(const data E)
 
 	/* Init binary preference relations */
 	float** S=malloc((N+1)*sizeof(float*));
-	if(S == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+	if(S == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 
 	for(l=0;l<N+1;l++)
 	{
 		S[l]=calloc((N+1),sizeof(float));
-		if(S[l] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+		if(S[l] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 	}
 
 	for(l=0;l<M;l++)

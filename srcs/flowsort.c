@@ -22,7 +22,7 @@
 		char buff[30];
 
 		strcpy(path,"./outputs/flowsort_");
-		strcpy(buff,argv[1]);
+		strcpy(buff,argv[3]);
 		strtok(buff,"/");
 		strcat(path,strtok(NULL,"/"));
 

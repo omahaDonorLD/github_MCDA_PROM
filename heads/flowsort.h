@@ -19,10 +19,12 @@ typedef categorie* ptr_cat;
 
 
 /** C is a set of 3*N_CAT (positive, negative and net flows) pointers to "category" types (to the heads ot the linked-lists).
+ * C is used from the categories point of view : " what are the actions in category i ? "
 */
 ptr_cat** C;
 
-/** C is the set of 3*N_CAT ptr to categories : comparing to the positive, negative and net flows.
+/** R is the list of categories on which the differents actions belong : size N*3 (for each action : the positive, negative and net flows to which it belongs).
+ * R is the "set of categories" from the actions point of view : " what are the categories the action i belongs to ? ".
 */
 int** act_to_cat;
 
@@ -47,6 +49,9 @@ ptr_cat add_a_categorie(ptr_cat head, int to_add);
  */
 void flowsort(float** PHI);
 
+
+/** print into file the results of promethee **/
+void write_flowsort_results(float** PHI, char** argv);
 
 #endif
 

@@ -31,12 +31,22 @@ typedef struct expert
 }expert;
 
 
+/** The 2 following functions are made just to track the memory allocation failure and others failures.
+*/
+void PRINT_MEM_FAIL(int LINE, char* THE_FILE);
+void LEAVE_FAIL(int LINE, char* THE_FILE);
+
+
 /** "data" is a list of M "opinions" */
 typedef expert* data;
 
 /** adds a new preference relation to the S_l linked list.
 */
 expert_pref* add_S_l(expert_pref* current, unsigned short int new_p, int new_a, int new_b);
+
+/** global variables to be used throughout the application **/
+bool COMPLETE_PREORDER;/* true when promethee 2 is triggered */
+bool STOCH;/* true when a stochastic method has to be used */
 
 #endif
 
