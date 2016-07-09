@@ -50,10 +50,10 @@ eg. :
 1,2.0 2,2.0 3.9,1.5
 4.,2. 6,2.0 7,1.
 
-This example is similar to the previous problem with a stochastic feature in addition : as a consequence, each evaluation has a mean and standard deviation parameters for the computation of the expected preference function.
+This example is similar to the previous problem, but with a stochastic feature in addition : as a consequence, each evaluation has a mean and standard deviation parameters.
 
 
-2. When one wants to apply a sorting method, he has to add a supplementary argument that is the file containing the reference profiles to apply with the flowsort method :
+2. When one wants to apply a sorting method, he has to add a supplementary argument that is the file containing the reference profiles for the flowsort method :
 (1st line) gives "N", the number of reference profiles.
 ("N" next lines) contains "K" (number of criteria) number of "performances" of each reference profile.
 eg. :

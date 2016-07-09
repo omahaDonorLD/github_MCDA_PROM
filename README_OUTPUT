@@ -12,7 +12,7 @@ I) The results of the application of the PROMETHEE method (I or II, depending on
 				=> 2 for the indifference relation <=> (a,b,2) a and b are indifferent ((b,a,2) should also be in the preference relations set.)
 				=> 1 for the incomparability relation <=> (a,b,1) a and b are incomparable ((b,a,1) should also be in the preference relations set.)
 
-II) The global results, with opinions of the experts altogether. Those results are obtained either with a "weighted aggregation" of all the binary preference relations sets obtained from all the experts (Promethee I applied), or a ranking when a complete preorder has been made (Promethee II). This step generates one of the 2 files :
+II) The global results, with opinions of the experts altogether. Those results are obtained either with a "weighted aggregation" of all the binary preference relations sets obtained from all the experts (Promethee I applied), or with a ranking when a complete preorder has been made (Promethee II). This step generates one of the 2 files :
 	- aggr_pref_[name_of_instance] (Promethee I applied) : containing the square matrix of valued preference relation that takes into account all the experts (N lines, N columns), plus N lines depicting the flows (entering and leaving) for each project given the previous matrix (a sum on all the lines and columns).
 	- ranks_[name_of_instance] (Promethee II applied) :
 		* M rankings (for each line (one ranking), the element on column j represents the rank of the project j)
