@@ -11,7 +11,7 @@
 #define PREF 1.
 
 /** Note  : the "PHI" array (the matrix of flows) is a 3*N matrix, for which the :
- *  - first line ( [0][i] | i in 1,..,N ) contains the outranking flow of i,
+ *  - first dimension ( [0][i] | i in 1,..,N ) contains the outranking flow of i,
  *  - 2nd ( [1][i] | i in 1,..,N ) contains the outranked flow of i,
  *  - 3rd ( [2][i] | i in 1,..,N ) contains the net flow of i.
 */

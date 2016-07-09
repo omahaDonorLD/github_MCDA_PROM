@@ -1,22 +1,27 @@
 
-Two outputs are possible for a Multicriteria Problem numerical instance : The ranking result and the sorting result.
+Differents files of results are generated in the "outputs" directory :
 
-I) The result of the application of the PROMETHEE method (I or II). It is contained in a file named : ranking_[name_of_instance] in the "outputs" directory.
-Its content : 
+I) The results of the application of the PROMETHEE method (I or II, depending on the 3rd argument provided). Those are contained in a file named either prom_1_[name_of_instance] or prom_2_[name_of_instance] . Its content : 
 
-	- M time (for each expert) the following results :
-		-- PI, the multicriteria preference function
-		-- PHI, the outranking/outranked/net flows
-		-- S_l, the binary preference relations set.
-			** a number of elements of the format (a,b,c), where a and b are the projects and c is the value of the binary relation :
-				=> 3 for the preference relation : (a,b,3) a is preferred to b
-				=> 2 for the indifference relation : (a,b,2) a and b are indifferent ((b,a,2) should be too into the preference relation set.)
-				=> 1 for the incomparability relation : (a,b,1) a and b are incomparable ((b,a,1) should be too into the preference relation set.)
+	- M times (for each expert) the following results :
+		-- N lines denoting PI, the multicriteria preference function of a project over its opponents,
+		-- PHI, the outranking/outranked/net flows, presented in 3 lines : 1st,2nd,3rd respectively the positive, negative and net flows,
+		-- (N+3+1)th line, the "S_l", i.e. the binary preference relations set, a set of a given number of elements each of the format (a,b,c) :
+			** a and b are two projects and c is the value of the binary relation :
+				=> 3 for the preference relation <=> (a,b,3) a is preferred to b
+				=> 2 for the indifference relation <=> (a,b,2) a and b are indifferent ((b,a,2) should also be in the preference relations set.)
+				=> 1 for the incomparability relation <=> (a,b,1) a and b are incomparable ((b,a,1) should also be in the preference relations set.)
 
+II) The global results, with opinions of the experts altogether. Those results are obtained either with a "weighted aggregation" of all the binary preference relations sets obtained from all the experts (Promethee I applied), or a ranking when a complete preorder has been made (Promethee II). This step generates one of the 2 files :
+	- aggr_pref_[name_of_instance] (Promethee I applied) : containing the square matrix of valued preference relation that takes into account all the experts (N lines, N columns), plus N lines depicting the flows (entering and leaving) for each project given the previous matrix (a sum on all the lines and columns).
+	- ranks_[name_of_instance] (Promethee II applied) :
+		* M rankings (for each line (one ranking), the element on column j represents the rank of the project j)
+		* the M+1th line, that gives the sum of ranks
+		* the M+2th line, the global ranking. CAUTION !!! UNLIKE the previous rankings, this one gives the ORDER of ranks of projects from left to right (separated by a comma in case of ties). eg : 4 3 1 2 means the 4th project is the best, then follows the 3rd project and so forth. 4 3 1,2 means projects 1 and 2 are both of the same rank 3.
 
-	- In case of a :
-		-- Partial preorder (PROMETHEE I) : the weighted aggregation of the overall binary preference relations.
-		-- Complete preorder (PROMETHEE II) : The complete ranking for each expert and the sum of ranks over all the experts (the ranking over all the experts can then be done by a ranking from the lowest sum value to the highest.)
-
-		
-
+III) If a flowsort is launched, a supplementary file (still in "outputs" directory) is created and contains all the results of the sorting process :
+	- flowsort_[name_of_instance] : 
+		* N lines with each : (NUMBER_OF_CATEGORIES+1) groups of 3 columns, representing the flows obtained by computing the preference degrees of the reference profiles and alternatives, for each criterion :
+			=> NUMBER_OF_CATEGORIES parts of 3 columns depicting the performance flows (positive,negative,net) of the reference profiles,
+			=> (NUMBER_OF_CATEGORIES+1)th group of 3 columns, giving the performance flow values of the action i,  
+		* N lines with 3 columns each, giving the categories (constructed with respect to positive, negative and flow values.) in which the action i is to be assigned.

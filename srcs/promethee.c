@@ -193,13 +193,9 @@
 			fprintf(f,"\n");
 		}
 
-		/* Write the results obtained for PHI */
+		/* Write the results obtained for PHI. Reminder : 0,1,2 respectively the positive, negative and net flows. */
 		for(a=0;a<3;a++)
-		{
-			for(b=0;b<N;b++)
-				fprintf(f,"%f ", PHI[0][a]);
-			fprintf(f,"\n");
-		}
+			fprintf(f,"%f %f %f\n", PHI[0][a],PHI[1][a],PHI[2][a]);
 		
 		/* Write the binary preference relation for a given expert */
 		current_iterator=first;
@@ -219,11 +215,27 @@
 		FILE *f;
 		char path[30];
 		char buff[30];
-		
+		int **glob_rank;/* contains the final ranking considering all the experts' opinions */
+
 		if(COMPLETE_PREORDER)
+		{
 			strcpy(path,"./outputs/ranks_");
+			glob_rank=malloc(N*sizeof(int*));/* contains the final ranking considering all the experts' opinions */
+			if(glob_rank == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
+			for(a=0;a<N;a++)
+			{
+				glob_rank[a]=calloc(2,sizeof(int));
+				if(glob_rank[a] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
+				glob_rank[a][0]=a+1;/* the first column of each line contains the indices of "projects" to rank. */
+				glob_rank[a][1]=COMPLETE_PREORDER_S[a];/* the 2nd column of each line contains the "overall" rank of the "project". */
+			}
+
+			qsort(glob_rank, N, sizeof(int*), qsort_comparator);
+		}
 		else
+		{
 			strcpy(path,"./outputs/aggr_pref_");
+		}
 
 		strcpy(buff,argv[3]);
 		strtok(buff,"/");
@@ -241,6 +253,12 @@
 
 			for(a=0;a<N;a++)
 				fprintf(f,"%f ",COMPLETE_PREORDER_S[a]);
+			fprintf(f,"\n");
+
+			/* don't mind, just a trick to print the rankings in a clearer manner */
+			fprintf(f,"%d",glob_rank[N-1][0]);
+			for(a=N-2;a>-1;a--)
+				fprintf(f,( glob_rank[a][1]==glob_rank[a+1][1] ? ",%d" : " %d" ),glob_rank[a][0]);
 			fprintf(f,"\n");
 		}
 		else
