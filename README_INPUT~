@@ -1,0 +1,70 @@
+
+1. The format needed of a MCDA problem numerical instance is as follows :
+
+1.1. a MCDA Problem WHOSE JOINT DISTRIBUTION IS KNOWN :
+
+_ 1st line : M K N : M is the number of "experts", K the number of criteria and N the number of actions/alternatives.
+
+_ K next lines : for each criterion, the thresholds q and p of the preferences sets.
+
+_ (K+1)th line : K floats : the weights of the criteria (K floats or integers).
+
+_ Remaining lines, in M groups of K+1 lines :
+	* the first line gives the weight of the expert
+	* the K next lines denote the score of the alternatives (actions, projects, etc.) on each criterion.
+
+eg. :
+2 2 3
+1 2
+2 3
+1 1 1
+3
+4 5 5
+5 6 7
+3
+1 2 3
+4 6 7
+
+(1st line) This instance illustrates a 2-criteria (2nd value) Problem where 3 projects (3rd value) are evaluated by 2 experts (1st value).
+(2nd line) The 1st criterion has indifference and preference threshold values of respectively 1 and 2.
+(3rd line) The 2nd criterion has threshold values of 2 and 3.
+(4th line) The weights of the criteria : 1 1 1 (all equals).
+(5th line) The 1st expert has a weight of 3.
+(6th and 7th line) the 3 projects (a, b, c) are evaluated by the first expert as follows :
+				a	|	b	|	c
+	on 1st criteria : 	4	|	5	|	5
+	on 2nd criteria :	5	|	6	|	7
+(Next 2+1 lines) same formatting but for the 2nd expert.
+
+
+1.2. a MCDA Problem whose distribution function IS NOT known : The only difference is that on the input of the evaluations. Since the normal distribution is used, the input to provide for each evaluation is the mean and the standard deviation. Hence, each evaluation is composed of two values separated by a comma :
+eg. :
+2 2 3
+1 2
+2 3
+1 1 1
+3
+4.9,2 5.,2 5.,2
+5.,2.9 6.,2 7.,2
+3
+1,2.0 2,2.0 3.9,1.5
+4.,2. 6,2.0 7,1.
+
+This example is similar to the previous problem, but with a stochastic feature in addition : as a consequence, each evaluation has a mean and standard deviation parameters.
+
+
+2. When one wants to apply a sorting method, he has to add a supplementary argument that is the file containing the reference profiles for the flowsort method :
+(1st line) gives "N", the number of reference profiles.
+("N" next lines) contains "K" (number of criteria) number of "performances" of each reference profile.
+eg. :
+5
+100 100 100 100 100
+75 75 75 75 75
+50 50 50 50 50
+25 25 25 25 25
+0 0 0 0 0
+
+5 reference profiles and all of their performances on each criterion (5 criteria here).
+
+
+

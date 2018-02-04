@@ -13,7 +13,7 @@
 /* Portion of code to use only if one wants to display results */
 /* =========================================================== */
 #ifdef PRINT_STUFFS
-
+	
 	void print_data(const data E)
 	{
 		int l=0, i=0, j=0;
@@ -82,6 +82,31 @@
 			printf("\n");
 		}
 		printf("End print_PI\n");
+	}
+
+
+	void print_PI_FlowSort(float** PI)
+	{
+		int a=0,b=0;
+
+		printf("The multicriteria preference indices FOR FlowSort\n");
+
+		for(a=0;a<N;a++)
+		{
+			printf("%d (Out)\t:",a);
+			for(b=0;b<N_CAT;b++)
+			{
+				printf("%f\t",PI[a][b]);
+			}
+			printf("\n");
+			printf("%d (In)\t:",a);
+			for(b=0;b<N_CAT;b++)
+			{
+				printf("%f\t",PI[N+a][b]);
+			}
+			printf("\n");
+		}
+		printf("End print_PI_FS\n");
 	}
 
 
@@ -176,7 +201,7 @@
 		else
 			strcat(path,"1_");
 
-		strcpy(buff,argv[3]);
+		strcpy(buff,argv[4]);
 		strtok(buff,"/");
 		strcat(path,strtok(NULL,"/"));
 
@@ -192,6 +217,7 @@
 				fprintf(f,"%f ", PI[a][b]);
 			fprintf(f,"\n");
 		}
+		fprintf(f,"\n");
 
 		/* Write the results obtained for PHI. Reminder : 0,1,2 respectively the positive, negative and net flows. */
 		for(a=0;a<3;a++)
@@ -220,7 +246,7 @@
 		if(COMPLETE_PREORDER)
 		{
 			strcpy(path,"./outputs/ranks_");
-			glob_rank=malloc(N*sizeof(int*));/* contains the final ranking considering all the experts' opinions */
+			glob_rank=malloc(N*sizeof(int*));/* allocate memory to contain the final ranking considering all the experts' opinions */
 			if(glob_rank == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 			for(a=0;a<N;a++)
 			{
@@ -237,7 +263,7 @@
 			strcpy(path,"./outputs/aggr_pref_");
 		}
 
-		strcpy(buff,argv[3]);
+		strcpy(buff,argv[4]);
 		strtok(buff,"/");
 		strcat(path,strtok(NULL,""));
 		f=fopen(path,"w");
@@ -270,6 +296,7 @@
 				fprintf(f,"\n");
 			}
 
+			/* Print In and Out sum of flows */
 			for(a=0;a<N;a++)
 				fprintf(f, "%f %f\n",S[a][N],S[N][a]);
 			fprintf(f,"\n");
@@ -289,24 +316,24 @@ int qsort_comparator(const void* pa, const void* pb)
 }
 
 
-void free_float_n_square_matrix(float** two_d_float)
+void free_float_matrix(float** float_matrix, int n_lines)
 {
 	int i=0;
 
-	for(i=0;i<N;i++)
+	for(i=0;i<n_lines;i++)
 	{
-		free(two_d_float[i]);
-		two_d_float[i]=NULL;
+		free(float_matrix[i]);
+		float_matrix[i]=NULL;
 	}
 
-	free(two_d_float);
-	two_d_float=NULL;
+	free(float_matrix);
+	float_matrix=NULL;
 
 	return;
 }
 
 
-void free_remaining_data(data E)
+void free_data(data E)
 {
 	int i=0,j=0;
 	/* free memory allocated for "data" */
@@ -338,20 +365,6 @@ void free_remaining_data(data E)
 }
 
 
-void free_PHI(float** PHI)
-{
-	int a=0;
-
-	for(a=0;a<3;a++)
-	{
-		free(PHI[a]);
-		PHI[a]=NULL;
-	}
-	free(PHI);
-	PHI=NULL;
-}
-
-
 void free_alloc_for_PROM_II(void)
 {
 	int i=0;
@@ -368,30 +381,15 @@ void free_alloc_for_PROM_II(void)
 }
 
 
-void free_S(float** S)
+float** pref_func(const float* e_l_i, int j, bool SORTING)
 {
-	int i=0;
-
-	for(i=0;i<N;i++)
-	{
-		free(S[i]);
-		S[i]=NULL;
-	}
-	free(S);
-	S=NULL;
-}
-
-
-float** level_criterion(const float* e_l_i, int j, bool sort_shift)
-{
-	int a=0,b=0,i=0, n_cols=0, n_ites=0;
+	int a=0,b=0,n_cols=0, n_ites=0;
 	float d=0., buff=0.;
-	bool assigned=false;
 	float** P_i;
 
 	/* the number of columns and number of iterations change given the purpose of the calculation :
-			is it needed for the ranking or sorting method (given by the boolean "sort_shift"). */
-	if(sort_shift)
+			is it needed for the ranking or sorting method (given by the boolean "SORTING"). */
+	if(SORTING)
 	{
 		n_cols=N_CAT;
 		n_ites=N;
@@ -406,51 +404,33 @@ float** level_criterion(const float* e_l_i, int j, bool sort_shift)
 
 	if(P_i == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 
-	for(i=0;i<N;i++)
+	for(a=0;a<N;a++)
 	{
-		P_i[i]=calloc(n_cols,sizeof(float));
-		if(P_i[i] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
+		P_i[a]=calloc(n_cols,sizeof(float));
+		if(P_i[a] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
 	}
-
-	assigned=false;
 
 	for(a=0;a<n_ites;a++)
 	{
-		if(sort_shift)
+		if(SORTING)
 			b=0;
 		else
 			b=a+1;
 
 		for(;b<n_cols;b++)
 		{
-			if(sort_shift)
+			if(SORTING)
 				d=e_l_i[a]-R[b][j];
 			else
-			{/* if nonsorting <=> if ranking */
+			{/* ranking */
 				d=e_l_i[a]-e_l_i[b];
 			}
 
-			assigned=false;
-			i=0;
 			buff=(d < 0 ? -d : d);/* absolute value since P_i[worst][best] has the worst value anyway, remains the best which has always d > 0 */
 
-			while(!assigned)
-			{
-				if( buff < THRESHOLDS[j][i] )
-				{
-					P_i[a][b]=( d >= 0 ? LEV_CRIT_GRADS[i] : -(LEV_CRIT_GRADS[i]) );
-					assigned=true;
-					continue;
-				}
-
-				i++;
-
-				if( i==3 )
-				{/* End of the threshold array => strict preferrence */
-					P_i[a][b]=( d >= 0 ? LEV_CRIT_GRADS[i] : -(LEV_CRIT_GRADS[i]) );
-					assigned=true;
-				}
-			}
+			/* Either P_i[a][b]=linear_criterion(j,d,buff) or P_i[a][b]=level_criterion(j,d,buff);
+			 it depends on the value of TYPE_CRITERION, that says which function in array of functions "TBL_PREF_FUNC" we use (either level or linear criterion) */
+			P_i[a][b]=(*TBL_PREF_FUNC[TYPE_CRITERION])(j,d,buff);
 		}
 	}
 
@@ -458,13 +438,51 @@ float** level_criterion(const float* e_l_i, int j, bool sort_shift)
 }
 
 
-float** compute_pref_indices(float*** P_l, bool sort_shift)
+float level_criterion(int j, float d, float buff)
+{
+	int i=0;
+
+	for(;i<3;i++)
+	{
+		if( buff < THRESHOLDS[j][i] )
+			return ( i < 2 ? 0. : ( d >= 0 ? LEV_CRIT_GRADS[i] : -(LEV_CRIT_GRADS[i]) ) );
+		if( i==2 )
+			return (d >= 0 ? 1.:-1.);
+	}
+
+	printf("This is not supposed to appear...");
+
+	return -111111.;
+}
+
+
+float linear_criterion(int j, float d, float buff)
+{
+	int i=0;
+
+	for(;i<3;i++)
+	{
+		if( buff < THRESHOLDS[j][i] )
+			return ( i < 2 ? 0. : (d>=0 ?
+									((buff-THRESHOLDS[j][1])/(THRESHOLDS[j][2]-THRESHOLDS[j][1]))
+									: -((buff-THRESHOLDS[j][1])/(THRESHOLDS[j][2]-THRESHOLDS[j][1])) ) );
+		if( i==2 )
+			return (d >= 0 ? 1.:-1.);
+	}
+
+	printf("This is not supposed to appear...(Linear criterion)");
+
+	return -222222.;
+}
+
+
+float** compute_pref_indices(float*** P_l, bool SORTING)
 {
 	int j=0, a=0, b=0, n_rows=0, n_cols=0, n_ites=0;
 	float num_1=0., num_2=0., denom=0., buff=0.;
 	float** PI;
 
-	if(sort_shift)
+	if(SORTING)
 	{
 		n_cols=N_CAT;
 		n_ites=N;
@@ -492,7 +510,7 @@ float** compute_pref_indices(float*** P_l, bool sort_shift)
 
 	for(a=0;a<n_ites;a++)
 	{
-		if(sort_shift)
+		if(SORTING)
 			b=0;
 		else
 			b=a+1;
@@ -513,14 +531,14 @@ float** compute_pref_indices(float*** P_l, bool sort_shift)
 					num_1+=buff;
 				}
 			}
-			
+
 			buff=num_1/denom;
 			PI[a][b]+=buff;
 			buff=num_2/denom;
 
-			/* the leaving preference indices are indexed from act_1 to act_n 
+			/* the leaving preference indices are indexed from action_1 to action_n 
 				and the entering are indexed from N+act_1 to N+act_n */
-			if(sort_shift)
+			if(SORTING)
 				PI[N+a][b]+=buff;
 
 			else
@@ -532,21 +550,24 @@ float** compute_pref_indices(float*** P_l, bool sort_shift)
 }
 
 
-float** compute_phi(float** PI, bool sort_shift)
+float** compute_phi(float** PI, bool SORTING)
 {
 	int a=0, b=0, n_cols=0, n_ites=0, denom=0;
 	float** PHI;
 
-	if(sort_shift)
+	if(SORTING)
 	{
 		/** Caution : the matrix is organised as follow :
 		 * 		The number of rows are still 3, for in-out-net flows
-		 * 		!!!BUT!!! the number of columns are (N_CAT+1)*N with order :
+		 * 		!!!BUT!!! the number of columns are (N_CAT+1)*N ordered as follows :
 		 * 			r{1}_R{1}, r{2}_R{1}, r{3}_R{1}, ..., r{N_CAT}_R{1}, a{1}_R{1}, r{1}_R{2}, r{2}_R{2}, ..., r{N_CAT}_R{2}, a{2}_R{2},
 		 * 				..., r{N_CAT}_R{N-1}, a{N-1}_R{N-1}, r{1}_R{N}, r{2}_R{N}, r2_R2, ..., r{N_CAT}_R{N}, a{N}_R{N}
 		 */
 		n_cols=N_CAT;
-		denom=N_CAT;/* since R_{i}^{*} = R^{*} U a_{i}, then |R_{i}^{*}|-1 = |R^{*}| (the new set is extended by one element, withraw one and the numbers of elements is equal to the number of elements in the previous set) */
+		/* since R_{i}^{*} = R^{*} U a_{i}, then |R_{i}^{*}|-1 = |R^{*}|
+		 * (the new set is extended with one element, withraw one and the numbers
+		 * of elements in the new set is equal to the number of elements in the previous set) */
+		denom=N_CAT;
 		n_ites=N;
 	}
 	else
@@ -561,7 +582,7 @@ float** compute_phi(float** PI, bool sort_shift)
 
 	for(a=0;a<3;a++)
 	{
-		if(sort_shift)
+		if(SORTING)
 			PHI[a]=calloc((N_CAT+1)*N,sizeof(float));
 		else
 			PHI[a]=calloc(n_cols,sizeof(float));
@@ -569,7 +590,7 @@ float** compute_phi(float** PI, bool sort_shift)
 	}
 
 	/* in case of sorting, set strong preference degrees between limiting/centroids profiles */
-	if(sort_shift)
+	if(SORTING)
 		for(a=0;a<N;a++)
 		{
 			for(b=0;b<N_CAT;b++)
@@ -582,7 +603,7 @@ float** compute_phi(float** PI, bool sort_shift)
 	/* Summing the scores on the prefs inds */
 	for(a=0;a<n_ites;a++)
 	{
-		if(sort_shift)
+		if(SORTING)
 		{
 			PHI[0][((N_CAT+1)*a)+N_CAT]=0;
 			PHI[1][((N_CAT+1)*a)+N_CAT]=0;
@@ -593,7 +614,7 @@ float** compute_phi(float** PI, bool sort_shift)
 
 		for(;b<n_cols;b++)
 		{
-			if(sort_shift)
+			if(SORTING)
 			{
 				/* CAUTION CAUTION CAUTION :
 				 * =========================
@@ -610,14 +631,14 @@ float** compute_phi(float** PI, bool sort_shift)
 				PHI[0][a]+=PI[a][b];/* outranking */
 				PHI[1][a]+=PI[b][a];/* outranked */
 
-				/* Fill b at the same time */
+				/* Fills b at the same time */
 				PHI[0][b]+=PI[b][a];
 				PHI[1][b]+=PI[a][b];
 			}
 		}
 	}
 
-	if(sort_shift)
+	if(SORTING)
 		n_cols=(N_CAT+1)*N;
 	else
 		n_cols=N;
@@ -824,7 +845,9 @@ float** aggregate_S_l(const data E)
 
 		while(current_iterator!=NULL)
 		{
-			S[current_iterator->a][current_iterator->b]+=E[l].p_l;
+			// Only take into account the binary relation if it is a strong binary preference (not indifference nor incomparable)
+			if(current_iterator->a==current_iterator->b || current_iterator->p >= 3)
+				S[current_iterator->a][current_iterator->b]+=E[l].p_l;
 			/* frees at the same time */
 			tmp=current_iterator;
 			current_iterator=current_iterator->NEXT_S_l;

@@ -40,7 +40,7 @@ int** act_to_cat;
 ptr_cat add_a_categorie(ptr_cat head, int to_add);
 
 
-/** flowsort
+/** flowsort // Check into file promethee.h the format of preference indices when it comes for reference profiles.
  * 
  * The main function that performs the sorting : flowsort
  *
@@ -51,7 +51,7 @@ void flowsort(float** PHI);
 
 
 /** print into file the results of promethee **/
-void write_flowsort_results(float** PHI, char** argv);
+void write_flowsort_results(float** PI, float** PHI, char** argv);
 
 #endif
 

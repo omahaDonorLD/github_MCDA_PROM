@@ -48,20 +48,36 @@ float* criterion_weights;/* The criterion weights :) */
 int qsort_comparator(const void* pa, const void* pb);
 
 
-/** level_criterion
- *
+/** Preference function
+ * 
  * @param : e_l_i the list of N evaluations made by the expert l, and j the criterion currently evaluated.
  * @return : P_k_l, of value 0/0.5/1 as defined by the level criterion shape.
  *
 */
-float** level_criterion(const float* e_l_i, int j, bool sort_shift);
+float** pref_func(const float* e_l_i, int j, bool SORTING);
+
+
+/** level_criterion
+ *
+ * @param : j the criterion currently evaluated, d the distance between the preference values of the two alternatives to compare, and buff the absolute value of d needed for computing purposes
+ * @return : the computation of according and the level criterion preference function shape
+*/
+float level_criterion(int j, float d, float buff);
+
+
+/** linear_criterion
+ *
+ * similar to the function level_criterion except that for this one the computation is made according to the linear criterion preference function
+ * 
+*/
+float linear_criterion(int j, float d, float buff);
 
 
 /** compute_pref_indices
  *
  * Build the matrix of preference indices (PI).
  * 
- * Note : The structure of PI table is singular when the preference indices function is dedicated to the sorting (Sorry, this is due to a mistake done from the beginning, but a change would have required a lot of others change, and the due date is really close, and that is it, just deal with it, and :P ...).
+ * Note : The structure of PI table is singular when the preference indices function is dedicated to the sorting (Sorry, this is due to a mistake done from the beginning, but a change would have required a lot of others changes, and the due date is really close, and that is it, just deal with it, and :P ...).
  * 			It is presented as follow :
  * 
  *			PI		|	r_{1}					r_{2}				...				r_{K}
@@ -80,7 +96,7 @@ float** level_criterion(const float* e_l_i, int j, bool sort_shift);
  * @return : PI, the matrix of preference indices.
  *
 */
-float** compute_pref_indices(float*** P_l, bool sort_shift);
+float** compute_pref_indices(float*** P_l, bool SORTING);
 
 
 /** compute_phi
@@ -91,7 +107,7 @@ float** compute_pref_indices(float*** P_l, bool sort_shift);
  * @return : PHI, the matrix of flows (0, 1 and 2 respectively the outranking, outranked and net values.).
  *
 */
-float** compute_phi(float** PI, bool sort_shift);
+float** compute_phi(float** PI, bool SORTING);
 
 
 /** PROM_1
@@ -107,7 +123,7 @@ float** compute_phi(float** PI, bool sort_shift);
 void PROM_1(expert* E_l, float** PHI);
 
 
-/** PROM_1
+/** PROM_2
  * 
  * Assigns the preferences binary relations with respect to the PROMETHEE 2 outranking flow.
  * 
@@ -131,7 +147,7 @@ void rank_single(expert_pref* first, int l);
 
 /** get_S_a
  *
- * doesn't do really much than summing the weighted ranks and store the result on the last column of "RANKS" matrix
+ * doesn't do really much other than summing the weighted ranks and store the result on the last column : "RANKS" matrix
  *
  * @param : the collected data from all experts, though only need and use their ranks
  * @return : nothing
@@ -153,26 +169,35 @@ float** aggregate_S_l(const data E);
 
 
 /** Dealloc memory **/
-
-/** P_i, PI, and PHI are all 2D float of size N*N, hence one can use the same method to free them **/
-void free_float_n_square_matrix(float** two_d_float);
-
 /** Free data **/
 void free_PHI(float** PHI);
 
 /** Free data **/
-void free_remaining_data(data E);
-
-/** Free data **/
 void free_alloc_for_PROM_II();
 
-/** Free data **/
 void free_S(float** S);
+
+void free_data(data E);
+
+/** free_float_matrix
+ * 
+ * Frees the allocated memory to the 2d array with n_lines lines
+ * 
+ * @param : float_matrix the matrix to free and n_lines its number of lines
+ * 
+*/
+void free_float_matrix(float** float_matrix, int n_lines);
 
 
 /** print into file the results of promethee **/
 void write_prom_results(int l, float **PI, float **PHI, expert_pref* first, char **argv);
 void write_prom_global_results(char **argv, float** S);
+
+
+/** Table of preference functions */
+float (*TBL_PREF_FUNC[2])(int j, float d, float buff);
+
+int TYPE_CRITERION;/** 0 : Level criterion, 1 : Linear criterion */
 
 #endif
 

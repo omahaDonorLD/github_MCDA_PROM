@@ -13,7 +13,7 @@
 #ifdef PRINT_STUFFS
 
 
-	void write_flowsort_results(float** PHI, char** argv)
+	void write_flowsort_results(float** PI, float** PHI, char** argv)
 	{
 		int c=0,i=0,a=0;
 		categorie* ite;
@@ -22,22 +22,46 @@
 		char buff[30];
 
 		strcpy(path,"./outputs/flowsort_");
-		strcpy(buff,argv[3]);
+		strcpy(buff,argv[4]);
 		strtok(buff,"/");
 		strcat(path,strtok(NULL,"/"));
 
 		f=fopen(path,"w");
+
 		printf("%s\n",path);
+
+		for(a=0;a<N;a++)
+		{
+			for(i=0;i<N_CAT;i++)
+				fprintf(f,"%f ",PI[a][i]);
+			fprintf(f,"\n");
+			for(i=0;i<N_CAT;i++)
+				fprintf(f,"%f ",PI[N+a][i]);
+			fprintf(f,"\n");
+		}
 
 		for(a=0;a<N;a++)
 		{
 			for(i=0;i<=N_CAT;i++)
 				for(c=0;c<3;c++)
 					fprintf(f,"%f ",PHI[c][(N_CAT+1)*a+i]);
+
+					/*
+					 * PHI is a "3D" array : 3 rows, (N_CAT+1)*N Columns :
+					 * 
+					 * Fills file as follows :
+					 * 
+					 * 		| a1,r1	| a1,r2	|...| a1,rNCAT	| a1 | a2,r1 | a2,r2 |...| a2,rNCAT	| a2 |...| aN | aN,r1 |...| aN,rNCAT | aN
+					 * ---------------------------------------------------------------------------------------------------------------------
+					 * c+	| ite1	| ite4	| ite7
+					 * c-	| ite2	| ite5	| .........
+					 * c	| ite3	| ite6	| .........
+					 * 
+					 */
 			fprintf(f,"\n");
 		}
 
-		printf("The Categories (non printed categories have no actions within) :");
+		printf("Categories (Note : not printed categories have no alternatives within) :");
 
 		for(c=0;c<3;c++)
 		{
@@ -77,9 +101,11 @@
 		printf("\nEnd print_categories\n");
 		
 		fclose(f);
-/*		
+
 		f=popen("gnuplot","w");
-		fprintf(f, "set terminal postscript eps enhanced\n");
+		//fprintf(f, "set terminal postscript eps enhanced\n");
+		fprintf(f, "set terminal latex\n");
+		fprintf(f, "set size 1,1\n");
 		fprintf(f, "set xrange [-0.05 : 1.05]\n");
 		fprintf(f, "set yrange [-0.05 : 1.05]\n");
 		fprintf(f, "set xtics font \",8\"\n");
@@ -88,19 +114,24 @@
 
 		for(c=0;c<N;c++)
 		{
-			fprintf(f, "set xlabel \"{/Symbol f}^{+}_{R_{%d}}\" font \",8\"\n",c+1);
-			fprintf(f, "set ylabel \"{/Symbol f}^{-}_{R_{%d}}\" font \",8\"\n",c+1);
-			fprintf(f, "set output './outputs/results_%d.eps'\n",c);
+			/*
+			 * fprintf(f, "set xlabel \"{/Symbol f}^{+}_{R_{%d}}\" font \",8\"\n",c+1);
+			 * fprintf(f, "set ylabel \"{/Symbol f}^{-}_{R_{%d}}\" font \",8\"\n",c+1);*/
+			fprintf(f, "set xlabel \"$\phi^{+}_{R_{%d}}$\" font \",8\"\n",c+1);
+			fprintf(f, "set ylabel \"$\phi^{-}_{R_{%d}}$\" font \",8\"\n",c+1);
+			fprintf(f, "set output './outputs/results_%d.tex'\n",c);
 			fprintf(f, "a=0\n");
 			fprintf(f, "plot for [i=1:%d:3] '%s' every ::%d::%d u ((column(i)+column(i+3))/2):((column(i+1)+column(i+4))/2):((column(i+3)-column(i))/2):((column(i+4)-column(i+1))/2) w boxxy lt 1 lc 3 notitle",(N_CAT-1)*3,path,c,c);
-			fprintf(f, ", for [i=1:14:3] a=a+1 '%s' every ::%d::%d u (column(i)):(column(i+1)):(sprintf(\"(C^{+}_{%%d},C^{-}_{%%d})\",a,a)) w labels point pt 7 offset char -6.2,0.7 font \"6\" notitle",path,c,c);
-			fprintf(f, ", '%s' every ::%d::%d u 16:17:(sprintf(\"({/Symbol f}_{R_{%d}}^{+}(a_{%d}),{/Symbol f}_{R_{%d}}^{-}(a_{%d}))\")) lt rgb \"#FF0000\" w labels point pt 3 lc 1 offset char -7,0.7 font \"6\" notitle",path,c,c,c+1,c+1,c+1,c+1);
-			fprintf(f, ", '%s' every ::%d::%d u 16:17:(0):(0.07) w vectors lt rgb \"#FF0000\" notitle",path,c,c);
-			fprintf(f, ", '%s' every ::%d::%d u 16:17:(0.07):(0) w vectors lt rgb \"#FF0000\" notitle\n",path,c,c);
+			/*fprintf(f, ", for [i=1:%d:3] a=a+1 '%s' every ::%d::%d u (column(i)):(column(i+1)):(sprintf(\"(C^{+}_{%%d},C^{-}_{%%d})\",a,a)) w labels point pt 7 offset char -6.2,0.7 font \"6\" notitle",(N_CAT-1)*3,path,c,c);*/
+			fprintf(f, ", for [i=1:%d:3] '%s' every ::%d::%d u (column(i)):(column(i+1)) w point pt 7 notitle",(N_CAT-1)*3,path,c,c);
+			/*fprintf(f, ", '%s' every ::%d::%d u 16:17:(sprintf(\"({/Symbol f}_{R_{%d}}^{+}(a_{%d}),{/Symbol f}_{R_{%d}}^{-}(a_{%d}))\")) lt rgb \"#FF0000\" w labels point pt 3 lc 1 offset char -7,0.7 font \"6\" notitle",path,c,c,c+1,c+1,c+1,c+1);*/
+			fprintf(f, ", '%s' every ::%d::%d u 16:17 w p ls 3 notitle\n",path,c,c);
+			/*fprintf(f, ", '%s' every ::%d::%d u 16:17:(0):(0.07) w vectors lt rgb \"#FF0000\" notitle",path,c,c);
+			fprintf(f, ", '%s' every ::%d::%d u 16:17:(0.07):(0) w vectors lt rgb \"#FF0000\" notitle\n",path,c,c);*/
 		}
 
 		pclose(f);
-*/
+
 	}
 
 

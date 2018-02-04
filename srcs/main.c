@@ -26,7 +26,7 @@ data read_data(char** argv)
 	data E;
 	FILE* fp;
 
-	fp=fopen(argv[3],"r");
+	fp=fopen(argv[4],"r");
 
 	if( fscanf(fp,"%d %d %d", &M, &K, &N) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);}
 
@@ -122,9 +122,8 @@ data read_data(char** argv)
 			/* get the evaluation done by expert l to action k with respect to criterion j */
 			for(k=0;k<N;k++)
 			{
-				/* If stochastic case :  */
 				if(STOCH)
-				{
+				{/* If stochastic case : then all values are combined expected evalutations and their standard deviation (separated by a comma) */
 					if( fscanf(fp,"%f,%f", &buff, &STDs[j][k]) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);};
 				}
 				else
@@ -153,7 +152,7 @@ void read_sorting_data(char** argv)
 	int i=0,j=0;
 	FILE* fp;
 
-	fp=fopen(argv[4],"r");
+	fp=fopen(argv[5],"r");
 
 	if( fscanf(fp,"%d", &N_CAT) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);}
 
@@ -161,6 +160,12 @@ void read_sorting_data(char** argv)
 	R=malloc(N_CAT*sizeof(float*));
 	C=malloc(3*sizeof(ptr_cat*));
 	act_to_cat=malloc(N*sizeof(int*));
+
+	if(STOCH)
+	{/* referecence profiles are also pair of : an expected value and its standard deviation */
+		R_STDs=malloc(N_CAT*sizeof(float*));
+		if(R_STDs == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
+	}
 
 	for(j=0; j<3; j++)
 	{
@@ -173,7 +178,14 @@ void read_sorting_data(char** argv)
     {
 		act_to_cat[i]=calloc(3,sizeof(int));
 		R[i]=calloc(K,sizeof(float));
-        for(j=0; j<K; j++)  if( fscanf(fp,"%f", &R[i][j]) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);}
+		if(STOCH)
+		{
+			R_STDs[i]=calloc(K,sizeof(float));
+			if(R_STDs[i] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
+			for(j=0; j<K; j++)  if( fscanf(fp,"%f,%f", &R[i][j],&R_STDs[i][j]) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);}
+		}
+		else
+			for(j=0; j<K; j++)  if( fscanf(fp,"%f", &R[i][j]) < 0 ){LEAVE_FAIL(__LINE__, __FILE__);}
 	}
 
 	fclose(fp);
@@ -192,25 +204,42 @@ int main(int argc, char** argv)
 	/* used if COMPLETE_PREORDER */
 	float** S;
 
-	/* at least 2 arguments are needed */
-	if( argc < 2 ){printf("Please add more parameters\n");return 0;};
+	/* at least 4 arguments are needed : at 0 the executable, 1st. the shape of the preference function, 2nd. PROM I/II, 3rd. the numerical instance, */
+	if( argc < 5 ){printf("Please add more parameters\n");return 0;};
 
 	/* stochastic case */
-	if( atoi(argv[1]) == 1 )
+	if( atoi(argv[2]) == 1 )
 		STOCH=true;
 
-	if( atoi(argv[2]) == 1 )
+	/* Assign the available shapes for the preference function */
+	if(STOCH)
+	{
+		TBL_PREF_FUNC_EPF[0]=EPF_level_criterion;
+		TBL_PREF_FUNC_EPF[1]=EPF_linear_criterion;
+	}
+	else
+	{
+		TBL_PREF_FUNC[0]=level_criterion;
+		TBL_PREF_FUNC[1]=linear_criterion;
+	}
+	/* By default, use the level criterion type */
+	TYPE_CRITERION=0;
+	/* Change otherwise */
+	if( atoi(argv[1]) == 1 )
+		TYPE_CRITERION=1;
+
+	if( atoi(argv[3]) == 1 )
 		COMPLETE_PREORDER=true;
 
 	E=read_data(argv);
 	
 	/* When a sorting is required, read all data as well. */
-	if(argc > 4)
+	if(argc > 5)
 		read_sorting_data(argv);
 
 
 #ifdef PRINT_STUFFS
-print_data(E);/* Since data is of type "expert*" one can send directly the object that is a pointer, no copies will be created. */
+print_data(E);/* Since data is of type "expert*" one can send directly the object that is a pointer, and no copies will be created. */
 #endif
 
 	for(l=0;l<M;l++)
@@ -224,11 +253,11 @@ printf("Expert %d\n",l);
 		if(P_l == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
 
 		for(i=0;i<K;i++)
-		{/* computes P_1_l,..., P_K_l and gathers them into P_l */
+		{/* computes P_1_l,..., P_K_l and gathers result into P_l, wich means, for each expert, compute the multicriteria preference degree */
 			if(STOCH)
-				P_l[i]=EPF_level_criterion(E[l].e_ij[i], i, false);
+				P_l[i]=EPF(E[l].e_ij[i], i, false);
 			else
-				P_l[i]=level_criterion(E[l].e_ij[i], i, false);
+				P_l[i]=pref_func(E[l].e_ij[i], i, false);
 		}
 
 #ifdef PRINT_STUFFS
@@ -242,19 +271,20 @@ print_P_l(P_l[i]);
 
 		/* dealloc memory provided for P_l[i] */
 		for(i=0;i<K;i++)
-            free_float_n_square_matrix(P_l[i]);
+            free_float_matrix(P_l[i],N);
 
 		/* dealloc memory allocated to P_l, caution it has to be deallocated after deallocating all P_l[i] */
 		free(P_l);
 		P_l=NULL;
 
 		PHI=compute_phi(PI, false);
+		/* Here PI is not freed for it will be needed later */
 
 #ifdef PRINT_STUFFS
 print_PI(PI);
 #endif
 
-		/* apply PROMETHEE */
+		/* apply PROMETHEE I or II ? */
 		if(COMPLETE_PREORDER)
 			PROM_2((E+l), PHI);
 		else
@@ -275,10 +305,10 @@ print_S_l(E[l].S_l);
 		write_prom_results(l, PI, PHI, E[l].S_l, argv);
 
 		/* dealloc memory for PI */
-		free_float_n_square_matrix(PI);
+		free_float_matrix(PI, N);
 
-		/* dealloc PHI */
-		free_PHI(PHI);
+		/* dealloc PHI, 3 : pos,neg,net flows */
+		free_float_matrix(PHI, 3);
 	}
 
 	/* PROMETHEE II */
@@ -294,7 +324,7 @@ print_ranks();
 	else
 	{
 		/* PROMETHEE I */
-		S=aggregate_S_l(E);/* deallocating E[l].S_l memory is done while aggregating */
+		S=aggregate_S_l(E);/* deallocating E[l].S_l in memory is done during the aggregation */
 
 #ifdef PRINT_STUFFS
 print_aggregated_S_l(S);
@@ -303,35 +333,58 @@ print_aggregated_S_l(S);
 
 	write_prom_global_results(argv, S);
 
+	/* deallocate with respect to the type of preorder performed */
 	if(COMPLETE_PREORDER)
 		free_alloc_for_PROM_II();
 	else
-		free_S(S);
+		free_float_matrix(S, N+1);/* N+1 as (N+1)th contains the results of the summation */
 
-	/*** apply flowsort... ***/
-	if(argc > 4)
+	/* Apply flowsort if appropriate */
+	if(argc > 5)
 	{
 		for(l=0;l<M;l++)
 		{
 			P_l=malloc(K*sizeof(float**));
-			if(P_l == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
+			if(P_l == NULL){ /* Checking memory allocation failures */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
 
 			for(i=0;i<K;i++)
-			{/* computes P_1_l,..., P_K_l and gathers them into P_l */
-				P_l[i]=level_criterion(E[l].e_ij[i], i, true);
+			{/* computes P_1_l,..., P_K_l and... */
+				if(STOCH)
+					P_l[i]=EPF(E[l].e_ij[i], i, true);
+				else
+					P_l[i]=pref_func(E[l].e_ij[i], i, true);
 			}
 
+			/* gathers all of these results into a single P_l (but still for each expert separately) */
 			PI=compute_pref_indices(P_l, true);
+
+			/* Dealloc P_l[i] */
+			for(i=0;i<K;i++)
+				free_float_matrix(P_l[i],N);
+
+			/* and P_l */
+			free(P_l);
+			P_l=NULL;
+
+#ifdef PRINT_STUFFS
+printf("Expert %d\n",l);
+print_PI_FlowSort(PI);
+#endif
+
 			PHI=compute_phi(PI, true);
 			flowsort(PHI);
 
 			/* write results obtained by flowsort */
-			write_flowsort_results(PHI, argv);
+			write_flowsort_results(PI, PHI, argv);
+
+			/* dealloc PI and PHI */
+			free_float_matrix(PI,(2*N));
+			free_float_matrix(PHI,3);
 		}
 	}
 
 	/* free remaining data ;P */
-	free_remaining_data(E);
+	free_data(E);
 
 	return EXIT_SUCCESS;
 }

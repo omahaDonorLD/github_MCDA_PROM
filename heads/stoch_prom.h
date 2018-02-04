@@ -15,20 +15,40 @@
 float DELTA(float x, float d_mu, float d_sigma);
 
 
-/** EPF_level_criterion
+/** EPF
  * 
- * The expected preference function with use of the level criterion.
- * Caution : the computing of the EPF is different from the usual and mere application of the level criterion preference function
+ * The expected preference function when either the level criterion or the linear criterion is used.
+ * Note : the use of the EPF method is different from the mere application of the level criterion preference function
  *
- * @param : e_l_i the list of N evaluations made by the expert l, and j the criterion currently evaluated.
+ * @param : e_l_i the list of N evaluations made by the expert l, and j the criterion currently evaluated. SORTING says whether a flowsort is also applied
  * @return : the expected preference function
  *
 */
-float** EPF_level_criterion(const float* e_l_i, int j, bool sort_shift);
+float** EPF(const float* e_l_i, int j, bool SORTING);
+
+
+/** EPF_level_criterion
+ * 
+ * The expected preference function when the level criterion is used.
+ *
+*/
+float EPF_level_criterion(int j, float d_MU, float d_SIGMA);
+
+
+/** EPF_linear_criterion
+ * 
+ * The expected preference function when the linear criterion is used.
+ *
+*/
+float EPF_linear_criterion(int j, float d_MU, float d_SIGMA);
 
 
 /** the standard deviation for each alternative on each criterion. */
 float** STDs;
+/** same for reference profiles. */
+float** R_STDs;
+/** Table of EPF to use : EPF with type Level criterion or Linear criterion */
+float (*TBL_PREF_FUNC_EPF[2])(int j, float d_MU, float d_SIGMA);
 
 #endif
 

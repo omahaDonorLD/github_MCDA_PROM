@@ -13,17 +13,16 @@ float DELTA(float x, float d_mu, float d_sigma)
 }
 
 
-float** EPF_level_criterion(const float* e_l_i, int j, bool sort_shift)
+float** EPF(const float* e_l_i, int j, bool SORTING)
 {
 
-	int a=0,b=0,i=0, n_cols=0, n_ites=0;
-	float d_MU=0., d_SIGMA=0., buff=0., buff2=0.;
-	bool assigned=false;
+	int a=0, b=0, n_cols=0, n_ites=0;
+	float d_MU=0., d_SIGMA=0.;
 	float** P_i;
 
 	/* the number of columns and number of iterations change given the purpose of the calculation :
-			are we just applying PROMETHEE or a sorting will also be performed. The boolean "sort_shift" tells it. */
-	if(sort_shift)
+			are we just applying PROMETHEE or a sorting will also be performed ? The boolean "SORTING" tells it. */
+	if(SORTING)
 	{
 		n_cols=N_CAT;
 		n_ites=N;
@@ -38,27 +37,25 @@ float** EPF_level_criterion(const float* e_l_i, int j, bool sort_shift)
 
 	if(P_i == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 
-	for(i=0;i<N;i++)
+	for(a=0;a<N;a++)
 	{
-		P_i[i]=calloc(n_cols,sizeof(float));
-		if(P_i[i] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
+		P_i[a]=calloc(n_cols,sizeof(float));
+		if(P_i[a] == NULL){ /* memory allocation failure */ printf("MEMO_ALLOC_FAILURE line %d in file %s\n", __LINE__, __FILE__); }
 	}
-
-	assigned=false;
 
 	for(a=0;a<n_ites;a++)
 	{
-		if(sort_shift)
+		if(SORTING)
 			b=0;
 		else
 			b=a+1;
 
 		for(;b<n_cols;b++)
 		{
-			if(sort_shift)
+			if(SORTING)
 			{
 				d_MU=e_l_i[a]-R[b][j];
-				d_SIGMA=sqrt(pow(STDs[j][a],2.)+pow(R[b][j],2.));
+				d_SIGMA=sqrt(pow(STDs[j][a],2.)+pow(R_STDs[b][j],2.));/* Reminder : R_STDs : N_CAT*K */
 			}
 			else
 			{/* if nonsorting <=> if ranking */
@@ -66,35 +63,38 @@ float** EPF_level_criterion(const float* e_l_i, int j, bool sort_shift)
 				d_SIGMA=sqrt(pow(STDs[j][a],2.)+pow(STDs[j][b],2.));
 			}
 
-			assigned=false;
-			i=0;
-			buff=(d_MU < 0 ? -d_MU : d_MU);/* absolute value since P_i[worst][best] has the worst value anyway, remains the best which has always d > 0 */
-
-			while(!assigned)
-			{
-				if( buff < THRESHOLDS[j][i] )
-				{
-					buff2=( DELTA(THRESHOLDS[j][1],buff,d_SIGMA) + DELTA(THRESHOLDS[j][2],buff,d_SIGMA) );
-					P_i[a][b]=( d_MU >= 0 ? (1-buff2/2) : -(1-buff2/2));
-					assigned=true;
-					continue;
-				}
-
-				i++;
-
-				if( i==3 )
-				{/* End of the threshold array => strict preferrence */
-					buff2=( DELTA(THRESHOLDS[j][1],buff,d_SIGMA) + DELTA(THRESHOLDS[j][2],buff,d_SIGMA) );
-					P_i[a][b]=( d_MU >= 0 ? (1-buff2/2) : -(1-buff2/2));
-					assigned=true;
-				}
-			}
+			P_i[a][b]=(*TBL_PREF_FUNC_EPF[TYPE_CRITERION])(j, d_MU, d_SIGMA);
 		}
 	}
-
 	return P_i;
 }
 
+
+float EPF_level_criterion(int j, float d_MU, float d_SIGMA)
+{
+	float buff=0., buff2=0., res=0.;
+	buff=(d_MU < 0 ? -d_MU : d_MU);
+	buff2=( DELTA(THRESHOLDS[j][1],buff,d_SIGMA) + DELTA(THRESHOLDS[j][2],buff,d_SIGMA) );
+	res=(1-buff2/2);
+	return( d_MU >= 0 ? res : -res );
+}
+
+
+float EPF_linear_criterion(int j, float d_MU, float d_SIGMA)
+{
+	float PI=0.;
+	PI=acos(-1);
+	float buff=0., buff1=0., buff2=0., buff3=0., buff4=0., buff5=0., res=0., up_bound=0;
+	buff=(d_MU < 0 ? -d_MU : d_MU);
+	buff1=(d_SIGMA/(sqrt(2.*PI)*(THRESHOLDS[j][2]-THRESHOLDS[j][1])));
+	buff2=exp(-(pow(THRESHOLDS[j][1]-buff,2.)/(2*pow(d_SIGMA,2.))));
+	buff3=exp(-(pow(THRESHOLDS[j][2]-buff,2.)/(2*pow(d_SIGMA,2.))));
+	buff4=DELTA(THRESHOLDS[j][2],buff,d_SIGMA)*(((buff-THRESHOLDS[j][1])/(THRESHOLDS[j][2]-THRESHOLDS[j][1]))-1);
+	buff5=DELTA(THRESHOLDS[j][1],buff,d_SIGMA)*((buff-THRESHOLDS[j][1])/(THRESHOLDS[j][2]-THRESHOLDS[j][1]));
+	res=1+(buff1*(buff2-buff3))+buff4+buff5;
+	if(res>1)	res=1;/* The EPF has to stay in the limit [0,1] */
+	return( d_MU >= 0 ? res : -res );
+}
 
 #endif
 
