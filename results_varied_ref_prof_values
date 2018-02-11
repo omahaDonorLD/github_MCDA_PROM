@@ -1,0 +1,13 @@
+new ref profiles (tailored to data:1,0.75,0.55,0.40,0) :
+
+C[positive] : [C_1 : action_4 ]	[C_2 : action_3  action_2 ]	[C_3 : action_1 ]	
+C[negative] : [C_1 : action_4  action_3  action_2  action_1 ]	
+C[net] :      [C_1 : action_4  action_3 ]	[C_2 : action_2  action_1 ]
+
+former ref profiles (1,0.75,0.5,0.25,0) :
+
+C[positive] : [C_1 : action_4 ]	[C_2 : action_3  action_2  action_1 ]	
+C[negative] : [C_1 : action_4  action_3  action_2  action_1 ]	
+C[net] :      [C_1 : action_4  action_3 ]	[C_2 : action_2  action_1 ]	
+
+
