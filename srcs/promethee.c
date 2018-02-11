@@ -127,6 +127,34 @@
 	}
 
 
+	void print_PHI_FlowSort(float** PHI)
+	{
+		int a=0,b=0;
+
+		printf("The FlowSort flows\n");
+
+		printf("R|\t Ri+,Ri-,Ri\t|\t results for NCAT categories \t|\t res for alt_i\n");
+		printf("=====================================================================\n");
+
+		for(a=0;a<N;a++)
+		{
+			printf("R%d+ :\t",a+1);
+			for(b=0;b<=N_CAT;b++)
+				printf("%f ",PHI[0][((N_CAT+1)*a)+b]);
+			printf("\n");
+			printf("R%d- :\t",a+1);
+			for(b=0;b<=N_CAT;b++)
+				printf("%f ",PHI[1][((N_CAT+1)*a)+b]);
+			printf("\n");
+			printf("R%d  :\t",a+1);
+			for(b=0;b<=N_CAT;b++)
+				printf("%f ",PHI[2][((N_CAT+1)*a)+b]);
+			printf("\n");
+		}
+		printf("End print_PHI\n");
+	}
+
+
 	void print_S_l(expert_pref* first)
 	{
 		expert_pref* current_iterator=first;
@@ -220,7 +248,7 @@
 		fprintf(f,"\n");
 
 		/* Write the results obtained for PHI. Reminder : 0,1,2 respectively the positive, negative and net flows. */
-		for(a=0;a<3;a++)
+		for(a=0;a<N;a++)
 			fprintf(f,"%f %f %f\n", PHI[0][a],PHI[1][a],PHI[2][a]);
 		
 		/* Write the binary preference relation for a given expert */
@@ -563,7 +591,7 @@ float** compute_phi(float** PI, bool SORTING)
 		 * 			r{1}_R{1}, r{2}_R{1}, r{3}_R{1}, ..., r{N_CAT}_R{1}, a{1}_R{1}, r{1}_R{2}, r{2}_R{2}, ..., r{N_CAT}_R{2}, a{2}_R{2},
 		 * 				..., r{N_CAT}_R{N-1}, a{N-1}_R{N-1}, r{1}_R{N}, r{2}_R{N}, r2_R2, ..., r{N_CAT}_R{N}, a{N}_R{N}
 		 */
-		n_cols=N_CAT;
+		n_cols=N_CAT+1;
 		/* since R_{i}^{*} = R^{*} U a_{i}, then |R_{i}^{*}|-1 = |R^{*}|
 		 * (the new set is extended with one element, withraw one and the numbers
 		 * of elements in the new set is equal to the number of elements in the previous set) */
@@ -583,7 +611,7 @@ float** compute_phi(float** PI, bool SORTING)
 	for(a=0;a<3;a++)
 	{
 		if(SORTING)
-			PHI[a]=calloc((N_CAT+1)*N,sizeof(float));
+			PHI[a]=calloc(n_cols*N,sizeof(float));
 		else
 			PHI[a]=calloc(n_cols,sizeof(float));
 		if(PHI[a] == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL( __LINE__, __FILE__); }
@@ -616,7 +644,7 @@ float** compute_phi(float** PI, bool SORTING)
 		{
 			if(SORTING)
 			{
-				/* CAUTION CAUTION CAUTION :
+				/* CAUTION :
 				 * =========================
 				 *  read the structure of PI at the definition of the function "compute_pref_indices", file : promethee.h
 				 */
@@ -639,7 +667,7 @@ float** compute_phi(float** PI, bool SORTING)
 	}
 
 	if(SORTING)
-		n_cols=(N_CAT+1)*N;
+		n_cols=(N_CAT+1)*N+1;
 	else
 		n_cols=N;
 

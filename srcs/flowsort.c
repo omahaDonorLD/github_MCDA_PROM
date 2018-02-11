@@ -30,6 +30,7 @@
 
 		printf("%s\n",path);
 
+/* If uncommented, the PIs are displayed on the terminal but for the file for plotting (gnuplot) will not work.... (Do something for it)
 		for(a=0;a<N;a++)
 		{
 			for(i=0;i<N_CAT;i++)
@@ -39,6 +40,7 @@
 				fprintf(f,"%f ",PI[N+a][i]);
 			fprintf(f,"\n");
 		}
+*/
 
 		for(a=0;a<N;a++)
 		{
@@ -46,16 +48,15 @@
 				for(c=0;c<3;c++)
 					fprintf(f,"%f ",PHI[c][(N_CAT+1)*a+i]);
 
-					/*
-					 * PHI is a "3D" array : 3 rows, (N_CAT+1)*N Columns :
+					/* PHI is a "3D" array : 3 rows, (N_CAT+1)*N Columns :
 					 * 
-					 * Fills file as follows :
+					 * Fills file as follows (p : phi, _ : sub, ^: up. p^+_R_1(x): positive flows of x wrt R1.) :
 					 * 
-					 * 		| a1,r1	| a1,r2	|...| a1,rNCAT	| a1 | a2,r1 | a2,r2 |...| a2,rNCAT	| a2 |...| aN | aN,r1 |...| aN,rNCAT | aN
-					 * ---------------------------------------------------------------------------------------------------------------------
-					 * c+	| ite1	| ite4	| ite7
-					 * c-	| ite2	| ite5	| .........
-					 * c	| ite3	| ite6	| .........
+					 * p^+_R1(r1) | p^-_R1(r1) | p_R1(r1) | p^+_R1(r2) | p^-_R1(r2) | p_R1(r2) | ... | p^+_R1(rNCAT) | p^-_R1(rNCAT) | p_R1(rNCAT) | p^+_R1(a1) | p^-_R1(a1) | p_R1(a1)
+					 * ...
+					 * p^+_Rj(r1) | p^-_Rj(r1) | p_Rj(r1) | p^+_Rj(r2) | p^-_Rj(r2) | p_Rj(r2) | ... | p^+_Rj(rNCAT) | p^-_Rj(rNCAT) | p_Rj(rNCAT) | p^+_Rj(a1) | p^-_Rj(aj) | p_Rj(aj)
+					 * ...
+					 * p^+_RN(r1) | p^-_RN(r1) | p_RN(r1) | p^+_RN(r2) | p^-_RN(r2) | p_RN(r2) | ... | p^+_RN(rNCAT) | p^-_RN(rNCAT) | p_RN(rNCAT) | p^+_RN(aN) | p^-_RN(aN) | p_RN(aN)
 					 * 
 					 */
 			fprintf(f,"\n");
@@ -105,20 +106,21 @@
 		f=popen("gnuplot","w");
 		//fprintf(f, "set terminal postscript eps enhanced\n");
 		fprintf(f, "set terminal latex\n");
-		fprintf(f, "set size 1,1\n");
+		fprintf(f, "set size 0.7,0.7\n");
 		fprintf(f, "set xrange [-0.05 : 1.05]\n");
 		fprintf(f, "set yrange [-0.05 : 1.05]\n");
 		fprintf(f, "set xtics font \",8\"\n");
 		fprintf(f, "set ytics font \",8\"\n");
 		fprintf(f, "set style arrow 1 lc 1\n");
 
+		/*c is an alternative*/
 		for(c=0;c<N;c++)
 		{
 			/*
 			 * fprintf(f, "set xlabel \"{/Symbol f}^{+}_{R_{%d}}\" font \",8\"\n",c+1);
 			 * fprintf(f, "set ylabel \"{/Symbol f}^{-}_{R_{%d}}\" font \",8\"\n",c+1);*/
-			fprintf(f, "set xlabel \"$\phi^{+}_{R_{%d}}$\" font \",8\"\n",c+1);
-			fprintf(f, "set ylabel \"$\phi^{-}_{R_{%d}}$\" font \",8\"\n",c+1);
+			fprintf(f, "set xlabel \"$\\\\phi^{+}_{R_{%d}}$\" font \",8\"\n",c+1);
+			fprintf(f, "set ylabel \"$\\\\phi^{-}_{R_{%d}}$\" font \",8\"\n",c+1);
 			fprintf(f, "set output './outputs/results_%d.tex'\n",c);
 			fprintf(f, "a=0\n");
 			fprintf(f, "plot for [i=1:%d:3] '%s' every ::%d::%d u ((column(i)+column(i+3))/2):((column(i+1)+column(i+4))/2):((column(i+3)-column(i))/2):((column(i+4)-column(i+1))/2) w boxxy lt 1 lc 3 notitle",(N_CAT-1)*3,path,c,c);

@@ -238,16 +238,16 @@ int main(int argc, char** argv)
 		read_sorting_data(argv);
 
 
-#ifdef PRINT_STUFFS
-print_data(E);/* Since data is of type "expert*" one can send directly the object that is a pointer, and no copies will be created. */
-#endif
+//#ifdef PRINT_STUFFS
+//print_data(E);/* Since data is of type "expert*" one can send directly the object that is a pointer, and no copies will be created. */
+//#endif
 
 	for(l=0;l<M;l++)
 	{
 
-#ifdef PRINT_STUFFS
-printf("Expert %d\n",l);
-#endif
+//#ifdef PRINT_STUFFS
+//printf("Expert %d\n",l);
+//#endif
 
 		P_l=malloc(K*sizeof(float**));
 		if(P_l == NULL){ /* memory allocation failure */ PRINT_MEM_FAIL(__LINE__, __FILE__); }
@@ -260,10 +260,10 @@ printf("Expert %d\n",l);
 				P_l[i]=pref_func(E[l].e_ij[i], i, false);
 		}
 
-#ifdef PRINT_STUFFS
-for(i=0;i<K;i++)
-print_P_l(P_l[i]);
-#endif
+//#ifdef PRINT_STUFFS
+//for(i=0;i<K;i++)
+//print_P_l(P_l[i]);
+//#endif
 
 		/* Reminder : PI(a,b) = [ ( sum{j in 1 to K}(w[j]*P[j](a,b)) )/( sum{i in 1 to K} (w[j]) ) ] and is of size n*n.
 			PI(a,b) ~ P_j(a,b) considering simultaneously all the criteria */
@@ -280,9 +280,9 @@ print_P_l(P_l[i]);
 		PHI=compute_phi(PI, false);
 		/* Here PI is not freed for it will be needed later */
 
-#ifdef PRINT_STUFFS
-print_PI(PI);
-#endif
+//#ifdef PRINT_STUFFS
+//print_PI(PI);
+//#endif
 
 		/* apply PROMETHEE I or II ? */
 		if(COMPLETE_PREORDER)
@@ -290,13 +290,13 @@ print_PI(PI);
 		else
 			PROM_1((E+l), PHI);
 
-#ifdef PRINT_STUFFS
-print_PHI(PHI);
-#endif
+//#ifdef PRINT_STUFFS
+//print_PHI(PHI);
+//#endif
 
-#ifdef PRINT_STUFFS
-print_S_l(E[l].S_l);
-#endif
+//#ifdef PRINT_STUFFS
+//print_S_l(E[l].S_l);
+//#endif
 
 		/* if COMPLETE_PREORDER, a ranking can be made */
 		if(COMPLETE_PREORDER)
@@ -316,19 +316,19 @@ print_S_l(E[l].S_l);
 	{
 		get_S_a(E);/* if the ranking is a complete preorder, the computing can be done based on the rankings. */
 
-#ifdef PRINT_STUFFS
-printf("complete preorder (PROM II) :\n");
-print_ranks();
-#endif
+//#ifdef PRINT_STUFFS
+//printf("complete preorder (PROM II) :\n");
+//print_ranks();
+//#endif
 	}
 	else
 	{
 		/* PROMETHEE I */
 		S=aggregate_S_l(E);/* deallocating E[l].S_l in memory is done during the aggregation */
 
-#ifdef PRINT_STUFFS
-print_aggregated_S_l(S);
-#endif
+//#ifdef PRINT_STUFFS
+//print_aggregated_S_l(S);
+//#endif
 	}
 
 	write_prom_global_results(argv, S);
@@ -373,6 +373,10 @@ print_PI_FlowSort(PI);
 
 			PHI=compute_phi(PI, true);
 			flowsort(PHI);
+
+#ifdef PRINT_STUFFS
+print_PHI_FlowSort(PHI);
+#endif
 
 			/* write results obtained by flowsort */
 			write_flowsort_results(PI, PHI, argv);
